@@ -11,4 +11,8 @@ $( document ).ready(function() {
 	$("#svg_canvas").height($(document).height()-100);
 	
 	drawGrid();
+	
+	var testDesign = createDesign();
+	console.log(testDesign);
+	drawDesignOnGrid(testDesign);
 });

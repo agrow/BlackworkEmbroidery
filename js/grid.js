@@ -51,3 +51,14 @@ var nodeClick = function(){
 	//console.log(this);
 	d3.select(this).style("fill", "red");
 };
+
+var drawDesignOnGrid = function(design){
+	var svgElement = d3.selectAll("svg");
+	
+	
+	svgElement.append("circle")
+		.attr("cx", design.absoluteRoot.x*gridSpacing)
+		.attr("cy", design.absoluteRoot.y*gridSpacing)
+		.attr("r", 5)
+		.style("fill", "pink");
+};
