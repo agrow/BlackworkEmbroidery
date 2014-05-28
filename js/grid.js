@@ -84,9 +84,24 @@ var drawDensityColorMap = function(design){
 	
 };
 
+var drawMST = function(design){
+	var svgElement = d3.selectAll("svg");
+	var edges = design.findMST();
+	console.log("MST found: "); console.log(edges);
+	for(var i = 0; i < edges.length; i++){
+		svgElement.append("line")
+			.attr("x1", edges[i].point1.position.x * gridSpacing)
+			.attr("y1", edges[i].point1.position.y * gridSpacing)
+			.attr("x2", edges[i].point2.position.x * gridSpacing)
+			.attr("y2", edges[i].point2.position.y * gridSpacing)
+			.attr("stroke-width", 1)
+			.attr("stroke", "yellow")
+			.attr("stroke-linecap", "round");
+	}
+};
+
 var drawDesignOnGrid = function(design){
 	var svgElement = d3.selectAll("svg");
-	
 	
 	svgElement.append("circle")
 		.attr("cx", design.absoluteRoot.x*gridSpacing)

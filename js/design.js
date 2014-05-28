@@ -61,7 +61,7 @@ var createLine = function(){
 				}
 			} else if(point1.position.y === point2.position.y){
 				// Horizontal
-				line.direction = "hori"
+				line.direction = "hori";
 				if(point1.position.x > point2.position.x){
 					// point 1 is to the RIGHT, so its line and point are to the LEFT (6)
 					pt1AdjNum = 6;
@@ -188,6 +188,35 @@ var createDesign = function(){
 				//		If so, disconnect the line and leave the point
 				//		If not, remove the point
 			// Remove line
+		},
+		
+		findMST: function(){
+			var edges = [];
+			var points = [];
+			//var components = new Array(design.points.length);
+			for (var i = 0; i < design.points.length; i++){
+				//components[i]= new Array();
+				//components[i].add(design.points[i]);
+				
+				// reset a flag that determines if we've visited
+				design.points[i].addedToComponent = false;
+			}
+			// Should be an array of arrays each with 1 point
+			//console.log("MST components: " + components);
+			
+			for (var i = 0; i < design.lines.length; i++){
+				// For each line, if the end points have not been in a component...
+				if(design.lines[i].point1.addedToComponent === false || design.lines[i].point2.addedToComponent === false){
+					// and add the edge to the edges list
+					edges.push(design.lines[i]);
+					// and make it so
+					design.lines[i].point1.addedToComponent = true;
+					design.lines[i].point2.addedToComponent = true;
+				}
+			}
+			
+			design.currentMST = edges;
+			return edges;
 		},
 		// Design standard functions
 		update: function(){
