@@ -1,10 +1,13 @@
 
 // an integer value representing the pixel space between lines drawn
 var gridSpacing = 20;
+// set by drawGrid
+var numAcross; 
+var numDown;
 
 var drawGrid = function(){
-	var numAcross = $("#svg_canvas").width()/gridSpacing +1;
-	var numDown = $("#svg_canvas").height()/gridSpacing +1;
+	numAcross = $("#svg_canvas").width()/gridSpacing +1;
+	numDown = $("#svg_canvas").height()/gridSpacing +1;
 	var svgElement = d3.selectAll("svg");
 	
 	for(var i = 0; i < numAcross ; i++){
@@ -52,6 +55,35 @@ var nodeClick = function(){
 	d3.select(this).style("fill", "red");
 };
 
+var drawDensityColorMap = function(design){
+	var svgElement = d3.selectAll("svg");
+	
+	// init map
+	var map = new Array(Math.floor(numAcross));
+	for(var i = 0; i < numAcross; i++){
+		map[i] = new Array(Math.floor(numDown));
+	}
+	
+	for(var i = 0; i < design.points.length; i++){
+		map[design.points[i].position.x][design.points[i].position.y] = design.points[i].lines.length;
+	}
+	
+	for(var i = 0; i < numAcross; i++){
+		for(var j = 0; j < numDown; j++){
+			if (isNaN(map[i][j])) map[i][j] = 0;
+			
+			svgElement.append("rect")
+				.attr("x", (i * gridSpacing) - (gridSpacing/2))
+				.attr("y", (j * gridSpacing) - (gridSpacing/2))
+				.attr("width", gridSpacing)
+				.attr("height", gridSpacing)
+				.style("fill", "hsla(" + (map[i][j] * 40) + ", 50%, 50%, 0.5)");
+		}
+	}
+	
+	
+};
+
 var drawDesignOnGrid = function(design){
 	var svgElement = d3.selectAll("svg");
 	
@@ -61,4 +93,17 @@ var drawDesignOnGrid = function(design){
 		.attr("cy", design.absoluteRoot.y*gridSpacing)
 		.attr("r", 5)
 		.style("fill", "pink");
+
+	for(var i = 0; i < design.lines.length; i++){
+		console.log("drawing line... " + (design.lines[i].point1.position.x * gridSpacing) + ", " + design.lines[i].point1.position.y * gridSpacing + " /// " +
+									   + (design.lines[i].point2.position.x * gridSpacing) + ", " + design.lines[i].point2.position.y * gridSpacing);
+		svgElement.append("line")
+			.attr("x1", design.lines[i].point1.position.x * gridSpacing)
+			.attr("y1", design.lines[i].point1.position.y * gridSpacing)
+			.attr("x2", design.lines[i].point2.position.x * gridSpacing)
+			.attr("y2", design.lines[i].point2.position.y * gridSpacing)
+			.attr("stroke-width", 3)
+			.attr("stroke", "#000000")
+			.attr("stroke-linecap", "round");
+	}
 };

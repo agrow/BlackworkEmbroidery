@@ -14,5 +14,15 @@ $( document ).ready(function() {
 	
 	var testDesign = createDesign();
 	console.log(testDesign);
+	testDesign.addLine(1, 1, 2, 2); // Diag down
+	testDesign.addLine(2, 2, 2, 3); // Down
+	testDesign.addLine(2, 3, 3, 4); // Diag down
+	testDesign.addLine(3, 4, 4, 4); // Horizontal
+	testDesign.addLine(4, 4, 4, 3); // Up
+	testDesign.addLine(4, 3, 3, 2); // Diag down
+	testDesign.addLine(3, 2, 2, 2); // Horizontal
+	console.log(testDesign);
+	
+	//drawDensityColorMap(testDesign);
 	drawDesignOnGrid(testDesign);
 });
