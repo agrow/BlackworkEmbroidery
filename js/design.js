@@ -8,6 +8,16 @@ var createPosition = function(){
 
 var createPoint = function(){
 	var point = {
+		id: null,
+		findID: function(){
+			var id = "";
+			id += point.position.x;
+			id += point.position.y;
+			point.id = id;
+		},
+		update: function(){
+			point.findID();
+		},
 		position: createPosition(),
 		// Point and Line connections
 		//0: null, // Up
@@ -32,9 +42,25 @@ var createPoint = function(){
 
 var createLine = function(){
 	var line = {
+		id: null,
+		findID: function(){
+			var id = "";
+			id += line.point1.position.x;
+			id += line.point1.position.y;
+			id += line.point2.position.x;
+			id += line.point2.position.y;
+			line.id = id;
+		},
+		update: function(){
+			// Points have been changed? Re-calculate line info
+			line.findDirection(); // This also finds the point orientation
+			line.findID();
+		},
 		point1: createPoint(),
 		point2: createPoint(),
 		direction: "NA",
+		topOrRightPoint: null,
+		bottomOrLeftPoint: null,
 		findDirection: function(){
 			// Determines if the line is horizontal, vertical, posDiag, or 
 			// negDiag based on the x/y positions of its points
@@ -111,6 +137,31 @@ var createLine = function(){
 			point1.adjPoints[pt1AdjNum] = point2;
 			point2.adjLines[pt2AdjNum] = line;
 			point2.adjPoints[pt2AdjNum] = point1;
+			
+			line.findPointOrientation(1, pt1AdjNum);
+		},
+		
+		// NOTE: currently only uses point === 1 because it would be redundant copy-paste code to do it for point === 2.
+		// If you ever plan to use it for point === 2, make that part of the function!
+		findPointOrientation: function(point, adjNum){
+			//console.log("Checking point orientation: " + point + ", " + adjNum);
+			// Upper/right half of the map
+			if(point === 1){
+				if(adjNum === 7 || adjNum === 0 || adjNum === 1 || adjNum === 2){
+					// Point 1 is dominant	
+					line.topOrRightPoint = line.point1;
+					line.bottomOrLeftPoint = line.point2;
+					//console.log("point1 dominant");
+				} else {
+					// point 2 is dominant
+					line.topOrRightPoint = line.point2;
+					line.bottomOrLeftPoint = line.point1;
+					//console.log("point2 dominant");
+				}
+			}  else {
+				console.log("ERRROR: Don't call findPointOrientation with point !== 1 until you implement this part");
+			}
+			 
 		},
 	};
 	
@@ -148,39 +199,76 @@ var createDesign = function(){
 			// Can only remove a point if all lines connected to it
 			// have also been removed
 		},
+		
+		doesLineExist : function(x1, y1, x2, y2){
+			//var matchedPt1 = false;
+			//var matchedPt2 = false;
+			var lineString1 = "" + x1 + y1 + x2 + y2;
+			var lineString2 = "" + x2 + y2 + x1 + y1;
+			//console.log("checking lines " + lineString1 + " and " + lineString2);
+			for (var i = 0; i < design.lines.length; i++){
+				// NOTE: Checking the id, because it is faster and easier to code
+				// If at all this fails, check that the IDs are properly being set/created
+				if(design.lines[i].id === lineString1 || design.lines[i].id === lineString2){
+					return true;
+				}
+			}
+			
+			return false;
+		},
+		lastAddedLine : null,
 		addLine : function(x1, y1, x2, y2){
 			// does the line, or its reverse, exist?
-			// TO DO: Check existing lines matching x1,y1,x2,y2 or x2,y2,x1,y1
+			// Check existing lines matching x1,y1,x2,y2 or x2,y2,x1,y1
+			var lineExist = design.doesLineExist(x1, y1, x2, y2);
+			//console.log("Does this line exist? " + lineExist);
 			// ..........................................................
-			
-			var newLine = createLine();
-			// For start and end points:
-			var pt1ID = null;
-			var pt2ID = null;
-			for(var i = 0; i < design.points.length; i++){
-				if(design.points[i].position.x === x1 && design.points[i].position.y === y1) pt1ID = i;
-				if(design.points[i].position.x === x2 && design.points[i].position.y === y2) pt2ID = i;
-			}
-				// Does this point exist? 
-				//		If so, add it to this line
-			if(pt1ID !== null){
-				newLine.point1 = design.points[pt1ID];
+			// Also check: Do we have the same start and end point? That's not a line!
+			if(!lineExist && !(x1 === x2 && y1 === y2)){
+				var newLine = createLine();
+				// For start and end points:
+				var pt1ID = null;
+				var pt2ID = null;
+				for(var i = 0; i < design.points.length; i++){
+					if(design.points[i].position.x === x1 && design.points[i].position.y === y1) pt1ID = i;
+					if(design.points[i].position.x === x2 && design.points[i].position.y === y2) pt2ID = i;
+				}
+					// Does this point exist? 
+					//		If so, add it to this line
+				if(pt1ID !== null){
+					newLine.point1 = design.points[pt1ID];
+				} else {
+					// 		If not, create the point and add it to the line
+					newLine.point1 = design.addPoint(x1, y1);
+				}
+				if(pt2ID !== null){
+					newLine.point2 = design.points[pt2ID];
+				} else {
+					newLine.point2 = design.addPoint(x2, y2);
+				}
+					
+				// Figure out its direction and where it belongs in relation to the points
+				newLine.point1.lines.push(newLine);
+				newLine.point2.lines.push(newLine);
+				newLine.point1.update();
+				newLine.point2.update();
+				newLine.update();
+				// Add line to the design
+				design.lines.push(newLine);
+				design.lastAddedLine = newLine;
+				return true;
 			} else {
-				// 		If not, create the point and add it to the line
-				newLine.point1 = design.addPoint(x1, y1);
+				console.log("NOPE! Not making that " + x1 + y1 + x2 + y2 + " line. It already exists.");
+				return false;
 			}
-			if(pt2ID !== null){
-				newLine.point2 = design.points[pt2ID];
-			} else {
-				newLine.point2 = design.addPoint(x2, y2);
+		},
+		
+		addAllLines : function(newLines){
+			console.log("adding " + newLines.length + " new lines to the design");
+			for(var i = 0; i < newLines.length; i++){
+				design.addLine(newLines[i].point1.position.x, newLines[i].point1.position.y, 
+							   newLines[i].point2.position.x, newLines[i].point2.position.y);
 			}
-				
-			// Figure out its direction and where it belongs in relation to the points
-			newLine.point1.lines.push(newLine);
-			newLine.point2.lines.push(newLine);
-			newLine.findDirection();
-			// Add line to the design
-			design.lines.push(newLine);
 		},
 		removeLine : function() {
 			// For start and end points:
@@ -190,41 +278,216 @@ var createDesign = function(){
 			// Remove line
 		},
 		
+		reflectPoints: function(direction, value) {
+			var newLines = [];
+			
+			if(direction === "x"){
+				// Looks like |
+				// Expected: value of x=? line to be reflected upon
+				for(var i = 0; i < design.lines.length; i++){
+					var dist1 = value - design.lines[i].point1.position.x;
+					var dist2 = value - design.lines[i].point2.position.x;
+					//console.log("dist 1/2: " + dist1 + ", " + dist2);
+					var line = createLine();
+					line.point1 = createPoint();
+					line.point1.position.x = design.lines[i].point1.position.x + (dist1*2);
+					line.point1.position.y = design.lines[i].point1.position.y;
+					line.point2 = createPoint();
+					line.point2.position.x = design.lines[i].point2.position.x + (dist2*2);
+					line.point2.position.y = design.lines[i].point2.position.y;
+					newLines.push(line);
+				}
+			} else if (direction === "y"){
+				// Looks like -
+				// Expected: value of y=? line to be reflected upon
+				for(var i = 0; i < design.lines.length; i++){
+					var dist1 = value - design.lines[i].point1.position.y;
+					var dist2 = value - design.lines[i].point2.position.y;
+					console.log("ydist 1/2: " + dist1 + ", " + dist2);
+					var line = createLine();
+					line.point1 = createPoint();
+					line.point1.position.x = design.lines[i].point1.position.x;
+					line.point1.position.y = design.lines[i].point1.position.y + (dist1*2);
+					line.point2 = createPoint();
+					line.point2.position.x = design.lines[i].point2.position.x;
+					line.point2.position.y = design.lines[i].point2.position.y + (dist2*2);
+					newLines.push(line);
+				}
+			} else if (direction === "pDiag"){
+				// IE looks like /
+			} else if (direction === "nDiag"){
+				// IE looks like \
+			} else {
+				console.log("invalid direction: use 'x' 'y' 'pDiag' or 'nDiag'");
+			}
+			
+			return newLines;
+		},
+		
+		reflectArbitraryLines: function(a, c, x){
+			var newLines = [];
+			// For arbitrary line y = ax+c
+			// for horizontal line y=? a = 0, c = the offset
+			// for x=?, a and c are null and you use the x value instead.
+			
+			if(a === null && c === null){
+				// Looks like |
+				// Expected: value of x=? line to be reflected upon
+				for(var i = 0; i < design.lines.length; i++){
+					var dist1 = x - design.lines[i].point1.position.x;
+					var dist2 = x - design.lines[i].point2.position.x;
+					//console.log("dist 1/2: " + dist1 + ", " + dist2);
+					var line = createLine();
+					line.point1 = createPoint();
+					line.point1.position.x = design.lines[i].point1.position.x + (dist1*2);
+					line.point1.position.y = design.lines[i].point1.position.y;
+					line.point2 = createPoint();
+					line.point2.position.x = design.lines[i].point2.position.x + (dist2*2);
+					line.point2.position.y = design.lines[i].point2.position.y;
+					newLines.push(line);
+				}
+			} else {
+				for(var i = 0; i < design.lines.length; i++){
+					// (x + (y - c) * a)/(1+ (a*a))
+					var dist1 = (design.lines[i].point1.position.x + (design.lines[i].point1.position.y - c) * a) / (1 + (a * a));
+					var dist2 = (design.lines[i].point2.position.x + (design.lines[i].point2.position.y - c) * a) / (1 + (a * a));
+					console.log("dist 1/2: " + dist1 + ", " + dist2);
+					var line = createLine();
+					line.point1 = createPoint();
+					line.point1.position.x = 2*dist1 - design.lines[i].point1.position.x;
+					line.point1.position.y = 2*dist1*a - design.lines[i].point1.position.y + 2 * c;
+					line.point2 = createPoint();
+					line.point2.position.x = 2*dist2 - design.lines[i].point2.position.x;
+					line.point2.position.y = 2*dist2*a - design.lines[i].point2.position.y + 2 * c;
+					newLines.push(line);
+				}
+			}
+			
+			return newLines;
+		},
+		roundNumber : function(num){
+			if(num !== Math.floor(num) || num !== Math.ceil(num)){
+				console.log("rounding num " + num);
+				// Round the number
+				if(num > Math.floor(num) + .5) return Math.ceil(num);
+				else return Math.floor(num);
+			}
+			return num;
+		},
+		rotateAroundArbitraryPoint: function(cx, cy, angle){
+			var newLines = [];
+			
+			for(var i = 0; i < design.lines.length; i++){
+				
+				var line = createLine();
+				line.point1 = createPoint();
+				line.point2 = createPoint();
+				
+				var s = Math.sin(angle);
+				var c = Math.cos(angle);
+				
+				// translate to origin
+				line.point1.position.x = design.lines[i].point1.position.x - cx;
+				line.point1.position.y = design.lines[i].point1.position.y - cy;
+				line.point2.position.x = design.lines[i].point2.position.x - cx;
+				line.point2.position.y = design.lines[i].point2.position.y - cy;
+				
+				// rotate point
+				var xnew1 = line.point1.position.x * c - line.point1.position.y * s;
+				var ynew1 = line.point1.position.x * s + line.point1.position.y * c;
+				var xnew2 = line.point2.position.x * c - line.point2.position.y * s;
+				var ynew2 = line.point2.position.x * s + line.point2.position.y * c;
+				
+				// traslate point back
+				line.point1.position.x = design.roundNumber(xnew1 + cx);
+				line.point1.position.y = design.roundNumber(ynew1 + cy);
+				line.point2.position.x = design.roundNumber(xnew2 + cx);
+				line.point2.position.y = design.roundNumber(ynew2 + cy);
+
+				newLines.push(line);
+				
+			}
+			
+			console.log("new rotation lines...");
+			console.log(newLines);
+			return newLines;
+		},
+		
+		copyLines: function(xOffset, yOffset){
+			var newLines = [];
+			
+			for(var i = 0; i < design.lines.length; i++){
+				var line = createLine();
+				line.point1.position.x = design.lines[i].point1.position.x + xOffset;
+				line.point1.position.y = design.lines[i].point1.position.y + yOffset;
+				
+				line.point2.position.x = design.lines[i].point2.position.x + xOffset;
+				line.point2.position.y = design.lines[i].point2.position.y + yOffset;
+				
+				newLines.push(line);
+			}
+			
+			console.log("new copied lines...");
+			console.log(newLines);
+			return newLines;
+		},
+		
+		translateTheseLines: function(xOffset, yOffset){
+			for(var i = 0; i < design.points.length; i++){
+				design.points[i].position.x += xOffset;
+				design.points[i].position.y += yOffset;
+				
+				design.points[i].update();
+			}
+			
+			for(var j = 0; j < design.lines.length; j++){
+				design.lines[j].update();
+			}
+		},
+		
 		findMST: function(){
 			var edges = [];
-			var points = [];
+			var components = [];
+			var activeComponent = [];
 			//var components = new Array(design.points.length);
 			for (var i = 0; i < design.points.length; i++){
 				//components[i]= new Array();
 				//components[i].add(design.points[i]);
 				
 				// reset a flag that determines if we've visited
-				design.points[i].addedToComponent = false;
+				design.points[i].addedToComponent = i;
 			}
 			// Should be an array of arrays each with 1 point
 			//console.log("MST components: " + components);
 			
 			for (var i = 0; i < design.lines.length; i++){
 				// For each line, if the end points have not been in a component...
-				if(design.lines[i].point1.addedToComponent === false || design.lines[i].point2.addedToComponent === false){
+				if(design.lines[i].point1.addedToComponent !== design.lines[i].point2.addedToComponent){
+					//arbitrarily choose one component to merge into the other
+					var componentToKill = design.lines[i].point1.addedToComponent;
+					var componentToSave = design.lines[i].point2.addedToComponent;
+					// Go through all edges to merge into the saved component
+					for(var j = 0; j < design.lines.length; j++){
+						if(design.lines[j].point1.addedToComponent === componentToKill) design.lines[j].point1.addedToComponent = componentToSave;
+						if(design.lines[j].point2.addedToComponent === componentToKill) design.lines[j].point2.addedToComponent = componentToSave;
+					}
+					
+					// Even though the component to kill now should be completely killed, just be safe
+					design.lines[i].point1.addedToComponent = componentToSave;
+					//////////////////////////////////////////////////////
+					// BUUUG BUG BUG BUGBUGBUG ***************************
+					// Does not connect components depending on the order that they are added
+					// If two edges get added to two different components, they are flagged as true and not connected
+					// Fix: track which components the points are a part of?
+					
 					// and add the edge to the edges list
 					edges.push(design.lines[i]);
-					// and make it so
-					design.lines[i].point1.addedToComponent = true;
-					design.lines[i].point2.addedToComponent = true;
 				}
 			}
 			
 			design.currentMST = edges;
 			return edges;
-		},
-		// Design standard functions
-		update: function(){
-			
-		},
-		draw: function(){
-			
-		},
+		}
 	};
 	
 	return design;

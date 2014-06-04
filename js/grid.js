@@ -5,9 +5,18 @@ var gridSpacing = 20;
 var numAcross; 
 var numDown;
 
-var drawGrid = function(){
+var clearSVG = function(){
+	var svgElement = d3.selectAll("svg");
+};
+
+var sizeGrid = function(){
 	numAcross = $("#svg_canvas").width()/gridSpacing +1;
 	numDown = $("#svg_canvas").height()/gridSpacing +1;
+}
+
+var drawGrid = function(){
+	console.log("Drawing grid...");
+	sizeGrid();
 	var svgElement = d3.selectAll("svg");
 	
 	for(var i = 0; i < numAcross ; i++){
@@ -47,6 +56,8 @@ var drawGrid = function(){
 				.on("click", nodeClick);
 		}	
 	}
+	
+	console.log("Grid drawn.");
 };
 
 var nodeClick = function(){
@@ -101,17 +112,11 @@ var drawMST = function(design){
 };
 
 var drawDesignOnGrid = function(design){
+	console.log("Drawing design...");
 	var svgElement = d3.selectAll("svg");
-	
-	svgElement.append("circle")
-		.attr("cx", design.absoluteRoot.x*gridSpacing)
-		.attr("cy", design.absoluteRoot.y*gridSpacing)
-		.attr("r", 5)
-		.style("fill", "pink");
-
 	for(var i = 0; i < design.lines.length; i++){
-		console.log("drawing line... " + (design.lines[i].point1.position.x * gridSpacing) + ", " + design.lines[i].point1.position.y * gridSpacing + " /// " +
-									   + (design.lines[i].point2.position.x * gridSpacing) + ", " + design.lines[i].point2.position.y * gridSpacing);
+		//console.log("drawing line... " + (design.lines[i].point1.position.x * gridSpacing) + ", " + design.lines[i].point1.position.y * gridSpacing + " /// " +
+		//							   + (design.lines[i].point2.position.x * gridSpacing) + ", " + design.lines[i].point2.position.y * gridSpacing);
 		svgElement.append("line")
 			.attr("x1", design.lines[i].point1.position.x * gridSpacing)
 			.attr("y1", design.lines[i].point1.position.y * gridSpacing)
@@ -121,4 +126,20 @@ var drawDesignOnGrid = function(design){
 			.attr("stroke", "#000000")
 			.attr("stroke-linecap", "round");
 	}
+	console.log("Design drawn " + design.lines.length + " lines.");
 };
+
+var drawOneMoreLine = function(design){
+	if(design.lastAddedLine !== null){
+		var svgElement = d3.selectAll("svg");
+		
+		svgElement.append("line")
+			.attr("x1", design.lastAddedLine.point1.position.x * gridSpacing)
+			.attr("y1", design.lastAddedLine.point1.position.y * gridSpacing)
+			.attr("x2", design.lastAddedLine.point2.position.x * gridSpacing)
+			.attr("y2", design.lastAddedLine.point2.position.y * gridSpacing)
+			.attr("stroke-width", 3)
+			.attr("stroke", "#000000")
+			.attr("stroke-linecap", "round");
+	}
+}
