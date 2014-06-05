@@ -101,13 +101,16 @@ var randomPostProduction = function(design, options){
 	postDetails.width = postDetails.greatestX - postDetails.smallestX;
 	postDetails.height = postDetails.greatestY - postDetails.smallestY;
 	
+	if(postDetails.width === 0) postDetails.width = 1;
+	if(postDetails.height === 0) postDetails.height = 1;
+	
 	console.log("postDetails: ");
 	console.log(postDetails);
 	
 	var newDesignAdditions = createDesign();
 	// Randomly choose: Copy, Reflect, or rotate L/R to make a horizontal manipulation
-	//var firstManip = Math.floor(Math.random() * 4);
-	var firstManip = 2;
+	var firstManip = Math.floor(Math.random() * 4);
+	//var firstManip = 3;
 	if(firstManip === 0){
 		// Copy
 		console.log("Copying for first manip");
@@ -124,13 +127,16 @@ var randomPostProduction = function(design, options){
 		// Rotate Left
 		console.log("Rotating Left for first manip");
 		// This involves a rotate and translate
+		newDesignAdditions.addAllLines(design.rotateAroundArbitraryPoint(postDetails.greatestX + postDetails.xOffset, postDetails.greatestY + postDetails.yOffset, -Math.PI/2));
+		//newDesignAdditions.updateDimensions();
+		newDesignAdditions.translateTheseLines(postDetails.height + postDetails.xOffset, -(postDetails.width + postDetails.yOffset));
 	} else {
 		console.log("ERROR! first manip random is off: " + firstManip);
 	}
 	
 	// Randomly choose: Copy, Reflect, or rotate L/R to make a vertical manipulation
-	//var secondManip = Math.floor(Math.random() * 4);
-	var secondManip = 2;
+	var secondManip = Math.floor(Math.random() * 4);
+	//var secondManip = 3;
 	if(secondManip === 0){
 		// Copy
 		console.log("Copying for second manip");
@@ -141,14 +147,14 @@ var randomPostProduction = function(design, options){
 		console.log("Reflecting for second manip");
 		newDesignAdditions.addAllLines(newDesignAdditions.reflectPoints("y", postDetails.greatestY + postDetails.yOffset));
 		newDesignAdditions.addAllLines(design.reflectPoints("y", postDetails.greatestY + postDetails.yOffset));
-	} else if (secondManip === 2){
+	} else if (secondManip === 2 || secondManip === 3){
 		// Rotate Right
-		console.log("Rotating Right for second manip");
+		console.log("Rotating Right/Left for second manip");
 		newDesignAdditions.addAllLines(newDesignAdditions.rotateAroundArbitraryPoint(postDetails.greatestX + postDetails.xOffset, postDetails.greatestY + postDetails.yOffset, Math.PI));
 		newDesignAdditions.addAllLines(design.rotateAroundArbitraryPoint(postDetails.greatestX + postDetails.xOffset, postDetails.greatestY + postDetails.yOffset, Math.PI));
-	} else if (secondManip === 3){
+	//} else if (secondManip === 3){
 		// Rotate Left // exactly same as rotating right on the second pass, ignore!
-		console.log("Rotating Left for second manip");
+		//console.log("Rotating Left for second manip");
 	} else {
 		console.log("ERROR! second manip random is off: " + secondManip);
 	}

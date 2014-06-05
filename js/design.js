@@ -35,6 +35,33 @@ var createPoint = function(){
 		// unordered
 		lines: [],
 		points: [],
+		
+		// Scoring for grammar!
+		densityScore:-1,
+		balanceScore:-1,
+		scorePoint: function(){
+			// For every adj point/line, add 1/8
+			
+			// For every reflexive pair, add 1/4
+		},
+		
+		findPointAtOtherEndOfLine: function(line){
+			for(i = 0; i < point.lines.length; i++){
+				if(point.lines[i].id === line.id){
+					// Figure out if this point is point 1 or 2 and return the other one
+					if(point.lines[i].point1.id === point.id){
+						// this is point 1. Send back point 2
+						return point.lines[i].point2;
+					} else {
+						// this is point 2. Send back point 1
+						return point.lines[i].point1;
+					}
+				}
+			}
+			// This line isn't attached!
+			console.log("This point " + point.id + " is not a part of line " + line.id);
+			return null;
+		}
 	};
 	
 	return point;
@@ -173,10 +200,36 @@ var createDesign = function(){
 		absoluteRoot: createPosition(),
 		width: 10,
 		height: 10,
-		minWidth: 0, // calculated from points contained in the design
-		minHeight: 0, 
-		findMinDimensions : function(){
-			// Uses included points to find the min width/height to contain them
+		greatestX: -9999, 
+		smallestX: 9999, 
+		greatestY: -9999,
+		smallestY: 9999,
+		
+		resetDimensionMarkers : function(){
+			design.greatestX= -9999;
+			design.smallestX= 9999;
+			design.greatestY= -9999;
+			design.smallestY= 9999;
+		},
+		updateDimensions : function(){
+			design.resetDimensionMarkers();
+			for(var i = 0; i < design.points.length; i++){
+				if(design.points[i].position.x > design.greatestX) design.greatestX = design.points[i].position.x;
+				if(design.points[i].position.x < design.smallestX) design.smallestX = design.points[i].position.x;
+				
+				if(design.points[i].position.y > design.greatestY) design.greatestY = design.points[i].position.y;
+				if(design.points[i].position.y < design.smallestY) design.smallestY = design.points[i].position.y;
+			}
+			
+			design.width = design.greatestX - design.smallestX;
+			design.height = design.greatestY - design.smallestY;
+			
+			if(design.width === 0) design.width = 1;
+			if(design.height === 0) design.height = 1;
+			
+			console.log("design dimentions: " + design.smallestX + ", " + design.smallestY + " /// " +
+											  + design.greatestX + ", " + design.greatestY + " /// " +
+												design.width + " by " + design.height);
 		},
 		changeRoot: function(x, y){
 			// moves all points in the design by x and y amounts to keep the root

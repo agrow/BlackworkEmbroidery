@@ -79,12 +79,19 @@ $( document ).ready(function() {
 	
 	$("#randExp").click(function(){
 		randomExpansion(testDesign);
-		
 		drawOneMoreLine(testDesign);
-		//$("#svg_canvas").empty();
-		//drawGrid();
-		//drawDesignOnGrid(testDesign);
-		
+	});
+	$("#randExpx5").click(function(){
+		for(var i = 0; i < 5; i++) $("#randExp").trigger("click");
+	});
+	$("#randExpx10").click(function(){
+		for(var i = 0; i < 10; i++) $("#randExp").trigger("click");
+	});
+	$("#randExpx25").click(function(){
+		for(var i = 0; i < 25; i++) $("#randExp").trigger("click");
+	});
+	$("#randExpx50").click(function(){
+		for(var i = 0; i < 50; i++) $("#randExp").trigger("click");
 	});
 	
 	$("#restartGen").click(function(){
@@ -95,9 +102,44 @@ $( document ).ready(function() {
 		drawDesignOnGrid(testDesign);
 	});
 	
+	var designManip = null;
+	
 	$("#randPost").click(function(){
-		var designManip = randomPostProduction(testDesign);
-		drawDesignOnGrid(designManip);
+		// Remove any previous designManip things
+		removeObjectsWithClassName("designManip");
+		designManip = randomPostProduction(testDesign);
+		drawDesignOnGrid(designManip, {class: "designManip"});
+	});
+	
+	$("#clearPost").click(function(){
+		// Remove any previous designManip things
+		removeObjectsWithClassName("designManip");
+	});
+	
+	$("#makeEdge").click(function(){
+		// Remove any previous designManip things
+		removeObjectsWithClassName("designManip");
+		
+		var destructive = createDesign();
+		if(designManip !== null) {
+			destructive.addAllLines(designManip.lines);
+		}
+		
+		destructive.addAllLines(testDesign.lines);
+		drawDesignOnGridAsEdge(destructive, {class: "designManip"});
+	});
+	
+	$("#makeFill").click(function(){
+		// Remove any previous designManip things
+		removeObjectsWithClassName("designManip");
+		
+		var destructive = createDesign();
+		if(designManip !== null) {
+			destructive.addAllLines(designManip.lines);
+		}
+		
+		destructive.addAllLines(testDesign.lines);
+		drawDesignOnGridAsFill(destructive, {class: "designManip"});
 	});
 });
 

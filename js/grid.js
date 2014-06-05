@@ -111,22 +111,91 @@ var drawMST = function(design){
 	}
 };
 
-var drawDesignOnGrid = function(design){
+var drawDesignOnGrid = function(design, options){
 	console.log("Drawing design...");
 	var svgElement = d3.selectAll("svg");
 	for(var i = 0; i < design.lines.length; i++){
 		//console.log("drawing line... " + (design.lines[i].point1.position.x * gridSpacing) + ", " + design.lines[i].point1.position.y * gridSpacing + " /// " +
 		//							   + (design.lines[i].point2.position.x * gridSpacing) + ", " + design.lines[i].point2.position.y * gridSpacing);
-		svgElement.append("line")
-			.attr("x1", design.lines[i].point1.position.x * gridSpacing)
-			.attr("y1", design.lines[i].point1.position.y * gridSpacing)
-			.attr("x2", design.lines[i].point2.position.x * gridSpacing)
-			.attr("y2", design.lines[i].point2.position.y * gridSpacing)
-			.attr("stroke-width", 3)
-			.attr("stroke", "#000000")
-			.attr("stroke-linecap", "round");
+		if(options && options.class){
+			svgElement.append("line")
+				.attr("x1", design.lines[i].point1.position.x * gridSpacing)
+				.attr("y1", design.lines[i].point1.position.y * gridSpacing)
+				.attr("x2", design.lines[i].point2.position.x * gridSpacing)
+				.attr("y2", design.lines[i].point2.position.y * gridSpacing)
+				.attr("stroke-width", 3)
+				.attr("stroke", "#000000")
+				.attr("stroke-linecap", "round")
+				.attr("class", options.class);
+				
+		} else {
+			svgElement.append("line")
+				.attr("x1", design.lines[i].point1.position.x * gridSpacing)
+				.attr("y1", design.lines[i].point1.position.y * gridSpacing)
+				.attr("x2", design.lines[i].point2.position.x * gridSpacing)
+				.attr("y2", design.lines[i].point2.position.y * gridSpacing)
+				.attr("stroke-width", 3)
+				.attr("stroke", "#000000")
+				.attr("stroke-linecap", "round");
+		}
 	}
 	console.log("Design drawn " + design.lines.length + " lines.");
+};
+
+var drawDesignOnGridAsEdge = function(design, options){
+	var testCount = 0;
+	// Determine how many designs we can fit on here
+	design.updateDimensions();
+	var numDesigns = Math.ceil(numAcross/design.width) +2;
+	console.log("Can fit " + numDesigns + " on X axis... " + numAcross + "/" + design.width);
+	
+	// Translate to the beginning
+	while(design.greatestX > 0 && testCount < 100){
+		console.log("GREATESTX?! " + design.greatestX);
+		design.translateTheseLines(-design.width, 0);
+		design.updateDimensions();
+		testCount ++;
+	}
+	console.log("Move design " + testCount + " times");
+	//design.updateDimensions();
+	
+	// NOTE: Figure out how to not duplicate lines later
+	// Stamp them across the X axis
+	for(var i = 0; i < numDesigns; i++){
+		drawDesignOnGrid(design, options);
+		design.translateTheseLines(design.width, 0);
+	}
+	
+};
+
+var drawDesignOnGridAsFill = function(design, options){
+	var testCount = 0;
+	// Determine how many designs we can fit on here
+	design.updateDimensions();
+	var numDesigns = Math.ceil(numDown/design.height) +2;
+	console.log("Can fit " + numDesigns + " on Y axis... " + numDown + "/" + design.height);
+	
+	//Translate to the top
+	while(design.greatestY > 0 && testCount < 100){
+		console.log("GREATESTY?! " + design.greatestY);
+		design.translateTheseLines(0, -design.height);
+		design.updateDimensions();
+		testCount ++;
+	}
+	console.log("Move design " + testCount + " times");
+	
+	//design.translateTheseLines(0, -design.height * Math.floor(numDesigns/2));
+	
+	// Stamp them across the Y axis
+	console.log("num designs?! " + numDesigns);
+	for(var i = 0; i < numDesigns; i++){
+		console.log("drawing row " + i);
+		//console.log(design);
+		drawDesignOnGridAsEdge(design, options);
+		//drawDesignOnGrid(design, options);
+		//console.log(design);
+		design.translateTheseLines(0, design.height);
+	}
 };
 
 var drawOneMoreLine = function(design){
@@ -142,4 +211,11 @@ var drawOneMoreLine = function(design){
 			.attr("stroke", "#000000")
 			.attr("stroke-linecap", "round");
 	}
+}
+
+var removeObjectsWithClassName = function(name){
+	var svgElements = d3.selectAll("." + name);
+	console.log("SVG ELEMENTS!?!?!?!?!?!!! ");
+	console.log(svgElements);
+	svgElements.remove();
 }
