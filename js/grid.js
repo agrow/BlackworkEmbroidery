@@ -12,7 +12,7 @@ var clearSVG = function(){
 var sizeGrid = function(){
 	numAcross = $("#svg_canvas").width()/gridSpacing +1;
 	numDown = $("#svg_canvas").height()/gridSpacing +1;
-}
+};
 
 var drawGrid = function(){
 	console.log("Drawing grid...");

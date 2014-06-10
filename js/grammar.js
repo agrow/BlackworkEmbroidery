@@ -41,7 +41,14 @@ var buildRules = function(){
 	}
 	
 	console.log(rules.length + " rules generated");
-}
+};
+
+var connectPoints = function(pt1, pt2, options){
+	// Shortest path
+	// noise (and various degrees)
+	
+	// round-abouts
+};
 
 var randomGrammarStart = function(design, x, y){
 	var i = 0;
@@ -53,7 +60,7 @@ var randomGrammarStart = function(design, x, y){
 	}
 	
 	design.addLine(x, y, x + i, y + j);
-}
+};
 
 var randomExpansion = function(design, options){
 	var count = 0;
