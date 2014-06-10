@@ -152,3 +152,4 @@ var randomRestart = function(design){
 	randomGrammarStart(design, x, y);
 	console.log("Random restart complete.");
 }
+

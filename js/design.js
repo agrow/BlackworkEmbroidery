@@ -36,7 +36,7 @@ var createPoint = function(){
 		lines: [],
 		points: [],
 		
-		// Scoring for grammar!
+		// Scoring for grammar! 0-1 scale.
 		densityScore:-1,
 		balanceScore:-1,
 		scorePoint: function(){
