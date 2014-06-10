@@ -62,6 +62,88 @@ var randomGrammarStart = function(design, x, y){
 	design.addLine(x, y, x + i, y + j);
 };
 
+// BE CAREFUL! DO THIS ONLY WITH COPY POINTS TO TEST FOR BALANCE!
+var expandPhantomRule = function(point, ruleID){
+	var line = createLine(); // SUPER NULL
+	point.lines.push(line);
+	
+	if(rules[ruleID].xOffset === 0 && rules[ruleID].yOffset === -1) point.adjLines[0] = line;
+	else if(rules[ruleID].xOffset === 1 && rules[ruleID].yOffset === -1) point.adjLines[1] = line;
+	else if(rules[ruleID].xOffset === -1 && rules[ruleID].yOffset === 0) point.adjLines[6] = line;
+	else if(rules[ruleID].xOffset === 1 && rules[ruleID].yOffset === 0) point.adjLines[2] = line;
+	else if(rules[ruleID].xOffset === -1 && rules[ruleID].yOffset === 1) point.adjLines[5] = line;
+	else if(rules[ruleID].xOffset === 1 && rules[ruleID].yOffset === 1) point.adjLines[4] = line;
+	else if(rules[ruleID].xOffset === 1 && rules[ruleID].yOffset === 1) point.adjLines[3] = line;
+	else if(rules[ruleID].xOffset === -1 && rules[ruleID].yOffset === -1) point.adjLines[7] = line;
+}
+
+var spreadDensityExpansion = function(design, options){
+	
+}
+
+// NOTE: This function only really makes sense with the detailedBalanceScore
+var mostBalancedExpansion = function(design, options){
+	var possibleRules = [];
+	for(var i = 0; i < design.points.length; i++){
+		design.points[i].scorePointBalance();
+		for(var j = 0; j < rules.length; j++){
+			// Try out every rule on every point.
+			// 1. Test if it's viable
+			if(!rules[j].precond(design, design.points[i], rules[j].xOffset, rules[j].yOffset)){
+				// If it's viable, test how much it would increase the balance score by
+				var cPoint = copyPoint(design.points[i]);
+				expandPhantomRule(cPoint, j);
+				cPoint.scorePointBalance();
+				var ruleChoice = {
+					pointID: i,
+					ruleID: j,
+					dBSIncrease: cPoint.detailedBalanceScore - design.points[i].detailedBalanceScore
+				}
+				possibleRules.push(ruleChoice);
+			}
+		}
+	}
+	
+	// Rules have been made for all possible points and lines
+	console.log(possibleRules);
+	// Make and use a custom sort function for this array
+	// Sort the array
+	// Pick the biggest dBSIncrease
+	// Execute that rule
+}
+
+var balancedRandomExpansion = function(design, options){
+	//for(var i = 0; i < design.points.length; i++){
+		// Score all the points!
+	//	design.points[i].scorePointBalance();
+	//}
+	var count = 0;
+	
+	while(count < design.points.length * 10){
+		var chooseRule = Math.floor(Math.random() * rules.length);
+		var choosePoint = Math.floor(Math.random() * design.points.length);
+		if(!rules[chooseRule].precond(design, design.points[choosePoint], rules[chooseRule].xOffset, rules[chooseRule].yOffset)){
+			// This rule is valid. Would it increase balance?
+			design.points[choosePoint].scorePointBalance();
+			console.log(design.points[choosePoint].id + "..... Trying score... " + design.points[choosePoint].balanceScore);
+			var cPoint = copyPoint(design.points[choosePoint]);
+			expandPhantomRule(cPoint, chooseRule);
+			cPoint.scorePointBalance();
+			//console.log("Phantom copy with new line: " + cPoint.balanceScore);
+			if(cPoint.balanceScore > design.points[choosePoint].balanceScore){
+				console.log("rule expansion occuring");
+				console.log(rules[chooseRule]);
+				console.log("!!!!! FOUND A BALANCE INCREASE! " + cPoint.balanceScore + " > " + design.points[choosePoint].balanceScore);
+				rules[chooseRule].execute(design, design.points[choosePoint], rules[chooseRule].xOffset, rules[chooseRule].yOffset);
+				return true;
+			}
+		}
+		count++;
+	}
+	
+	console.log("In " + count + " tries, we could not find a way to increase balance through random selection.");
+};
+
 var randomExpansion = function(design, options){
 	var count = 0;
 	while(count < 9999){ // 9999 is the threshold for finding a workable rule. 

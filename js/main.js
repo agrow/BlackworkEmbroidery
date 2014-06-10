@@ -94,6 +94,17 @@ $( document ).ready(function() {
 		for(var i = 0; i < 50; i++) $("#randExp").trigger("click");
 	});
 	
+	$("#balaRandExp").click(function(){
+		balancedRandomExpansion(testDesign);
+		drawOneMoreLine(testDesign);
+	});
+	$("#balaRandx5").click(function(){
+		for(var i = 0; i < 5; i++) $("#balaRandExp").trigger("click");
+	});
+	$("#balaRandx25").click(function(){
+		for(var i = 0; i < 25; i++) $("#balaRandExp").trigger("click");
+	});
+	
 	$("#restartGen").click(function(){
 		$("#svg_canvas").empty();
 		drawGrid();

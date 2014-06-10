@@ -6,6 +6,13 @@ var createPosition = function(){
 	return position;
 };
 
+var copyPosition = function(position){
+	var newPosition = createPosition();
+	newPosition.x = position.x;
+	newPosition.y = position.y;
+	return newPosition;
+};
+
 var createPoint = function(){
 	var point = {
 		id: null,
@@ -31,6 +38,7 @@ var createPoint = function(){
 		// Reflexive Pairs: 0-4, 1-5, 2-6, 3-7
 		adjLines: [null, null, null, null, null, null, null, null],
 		adjPoints: [null, null, null, null, null, null, null, null],
+		foundBalance: [false, false, false, false, false, false, false, false],
 		
 		// unordered
 		lines: [],
@@ -39,10 +47,97 @@ var createPoint = function(){
 		// Scoring for grammar! 0-1 scale.
 		densityScore:-1,
 		balanceScore:-1,
-		scorePoint: function(){
-			// For every adj point/line, add 1/8
+		// There are 4 directions of balance, 12 major types of recombinations
+				// 4 line-based (across) --
+				// 12 pairs that skip an adj number >
+				// 12 triplets that are the previous 12 with a stem that bisects them ->
+				// 12 triplets that are the same as the last with the bisect that stretches outward >-
+				
+		// NOT on a scale of 0-1.
+		// Instead of finding every combination of lines, we count instances of pair or triplet balance found
+			// This does multi-count, for example > amd >- are separate counts. This is the only metric that captures it.
+		detailedBalanceScore: -1, 
+		balanceTypes:[], // The line of reflection in the balance: vert, hori, pDiag, nDiag. Same values as line direction.
+		scorePointBalance: function(){
+			// The score here determines "How many of the point's lines participate in some form of balance"
+			// Each line found is 1/8
+			point.balanceScore = 0;
+			point.detailedBalanceScore = 0;
+			point.balanceTypes = []; // Empty out previous balance types if they exist
+			point.foundBalance = [false, false, false, false, false, false, false, false];
+			//console.log("~~~ Checking balance of point " + point.id + " ~~~");
 			
-			// For every reflexive pair, add 1/4
+			// Check that there is more than 1 line to test for balance.
+			if(point.lines.length > 1){
+				// Check for the simplest: -- | / \ directly across
+				for(var i = 0; i < 4; i++){
+					//console.log(i + " what is my across ID? " + (i+4));
+					//console.log(point.adjLines[i]);
+					//console.log(point.adjLines[i+4]);
+					if(point.adjLines[i] !== null && point.adjLines[i+4] !== null){
+						// We found a pair! Its direction is either of the two points
+						console.log("We found a straight pair! " + i + ", " + (i+4));
+						point.foundBalance[i] = true;
+						point.foundBalance[i+4] = true;
+						point.detailedBalanceScore++;
+						if(!$.inArray(point.adjLines[i].direction, point.balanceTypes)) {
+							point.balanceTypes.push(point.adjLines[i].direction);
+							console.log("Found balance for point " + point.id + " of direction " + point.adjLines[i].direction);
+						}
+					}
+				}
+				
+				// Look at every line. Work clockwise so that we don't get repeats.
+				for(var i = 0; i < 8; i++){
+					var pair90 = (i+2)%8;
+					//console.log(i + " what is my pair90 ID?: " + pair90);
+					//console.log(point.adjLines);
+					//console.log(point.adjLines[i]);
+					//console.log(point.adjLines[pair90]);
+					
+					if(point.adjLines[i] !== null && point.adjLines[pair90] !== null){
+						console.log("Found a 90Degree balance " + i + ", " + pair90);
+						point.foundBalance[i] = true;
+						point.foundBalance[pair90] = true;
+						point.detailedBalanceScore++;
+						var balanceType = "";
+						if(point.adjLines[i].direction === "hori") balanceType = "nDiag";
+						else if(point.adjLines[i].direction === "nDiag") balanceType = "vert";
+						else if(point.adjLines[i].direction === "vert") balanceType = "pDiag";
+						else balanceType = "hori";
+						if(!$.inArray(balanceType, point.balanceTypes)) {
+							point.balanceTypes.push(balanceType);
+							console.log("Found balance for point " + point.id + " of direction " + balanceType);
+						}
+						
+						// Now for extra calculation for triplets in the detailedBalanceScore
+						// Note: these directions were already found, so we don't need to add them to balanceTypes again.
+						var innerBisect = (i+1)%8;
+						var outerBisect = (i+5)%8;
+						if(point.adjLines[innerBisect] !== null){
+							console.log("found an innerBisect at " + innerBisect);
+							point.foundBalance[innerBisect] = true;
+							point.detailedBalanceScore++;
+						}
+						if(point.adjLines[outerBisect] !== null){
+							console.log("found an outerBisect at " + outerBisect);
+							point.foundBalance[outerBisect] = true;
+							point.detailedBalanceScore++;
+						}
+					}
+					
+				}
+				
+				// Tally the final simple bisect count
+				for(var i = 0; i < point.foundBalance.length; i++){
+					if(point.foundBalance[i] === true) point.balanceScore += 1/8;
+				}
+				console.log("FINAL SCORES FOUND FOR POINT " + point.id + ": " + point.balanceScore + ", " + point.detailedBalanceScore);
+			}
+		},
+		
+		scorePointDensity: function(){
+			// For each adj line/point, add 1/8
 		},
 		
 		findPointAtOtherEndOfLine: function(line){
@@ -65,6 +160,26 @@ var createPoint = function(){
 	};
 	
 	return point;
+};
+
+// NOTE: BE CAREFUL WITH THIS COPY! There should never be copies of points (or lines) in the design
+// Everything with balance will be re-calculated by the owner of this copy (the grammar) once it manipulates it
+var copyPoint = function(point){
+	var newPoint = createPoint();
+	newPoint.position = copyPosition(point.position);
+	for(var i = 0; i < 8; i++){
+		if(point.adjLines[i] !== null) newPoint.adjLines[i] = point.adjLines[i];
+		if(point.adjPoints[i] !== null) newPoint.adjPoints[i] = point.adjPoints[i];
+	}
+	for(var i = 0; i < point.lines.length; i++){
+		newPoint.lines.push(point.lines[i]);
+	}
+	for(var i = 0; i < point.points.length; i++){
+		newPoint.points.push(point.points[i]);
+	}
+	newPoint.update();
+	newPoint.id += +"_COPY";
+	return newPoint;
 };
 
 var createLine = function(){
