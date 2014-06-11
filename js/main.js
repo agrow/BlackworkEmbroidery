@@ -105,6 +105,41 @@ $( document ).ready(function() {
 		for(var i = 0; i < 25; i++) $("#balaRandExp").trigger("click");
 	});
 	
+	$("#mostBalaExp").click(function(){
+		mostBalancedExpansion(testDesign);
+		drawOneMoreLine(testDesign);
+	});
+	
+	$("#mostBalax5").click(function(){
+		for(var i = 0; i < 5; i++) $("#mostBalaExp").trigger("click");
+	});
+	$("#mostBalax25").click(function(){
+		for(var i = 0; i < 25; i++) $("#mostBalaExp").trigger("click");
+	});
+	
+	$("#minDensityExp").click(function(){
+		spreadDensityExpansion(testDesign);
+		drawOneMoreLine(testDesign);
+	});
+	$("#minDensityx5").click(function(){
+		for(var i = 0; i < 5; i++) $("#minDensityExp").trigger("click");
+	});
+	$("#minDensityx25").click(function(){
+		for(var i = 0; i < 25; i++) $("#minDensityExp").trigger("click");
+	});
+	
+	$("#minDensityEndExp").click(function(){
+		spreadDensityExpansion(testDesign, {endpoint:true});
+		drawOneMoreLine(testDesign);
+	});
+	
+	$("#minDensityEndx5").click(function(){
+		for(var i = 0; i < 5; i++) $("#minDensityEndExp").trigger("click");
+	});
+	$("#minDensityEndx25").click(function(){
+		for(var i = 0; i < 25; i++) $("#minDensityEndExp").trigger("click");
+	});
+	
 	$("#restartGen").click(function(){
 		$("#svg_canvas").empty();
 		drawGrid();

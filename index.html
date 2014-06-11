@@ -5,7 +5,9 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>Blackwork</title>
 		<link rel="stylesheet" type="text/css" href="css/bw.css">
+		<link rel="stylesheet" type="text/css" href="css/ui-lightness/jquery-ui-1.10.4.css">
 		<script type="text/javascript" src="js/libs/jquery-1.11.1.js" ></script>
+		<script type="text/javascript" src="js/libs/jquery-ui-1.10.4.js" ></script>
 		<script src="http://d3js.org/d3.v3.min.js"></script>
 		<script type="text/javascript" src="js/design.js" ></script>
 		<script type="text/javascript" src="js/grammar.js" ></script>
@@ -17,6 +19,7 @@
 			<div id="control_panel">
 				<div>
 				<button type="button" id="restartGen"> Restart Generation </button>
+				<input type="checkbox" id="noCrosses"> Forbid crossing diagonals
 				</div>
 				<div>
 				<button type="button" id="randExp"> Random Expansion </button>
@@ -29,6 +32,17 @@
 				<button type="button" id="balaRandExp"> Balanced Random Expansion </button>
 				<button type="button" id="balaRandx5"> x5 </button>
 				<button type="button" id="balaRandx25"> x25 </button>
+				<button type="button" id="mostBalaExp"> Most Balanced Expansion </button>
+				<button type="button" id="mostBalax5"> x5 </button>
+				<button type="button" id="mostBalax25"> x25 </button>
+				</div>
+				<div>
+				<button type="button" id="minDensityExp"> Minimal Density Expansion </button>
+				<button type="button" id="minDensityx5"> x5 </button>
+				<button type="button" id="minDensityx25"> x25 </button>
+				<button type="button" id="minDensityEndExp"> Minimal Density Endpoint Expansion </button>
+				<button type="button" id="minDensityEndx5"> x5 </button>
+				<button type="button" id="minDensityEndx25"> x25 </button>
 				</div>
 				<div>
 				<button type="button" id="randPost"> Random Post-Production </button>

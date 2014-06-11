@@ -76,13 +76,13 @@ var createPoint = function(){
 					//console.log(point.adjLines[i+4]);
 					if(point.adjLines[i] !== null && point.adjLines[i+4] !== null){
 						// We found a pair! Its direction is either of the two points
-						console.log("We found a straight pair! " + i + ", " + (i+4));
+						//console.log("We found a straight pair! " + i + ", " + (i+4));
 						point.foundBalance[i] = true;
 						point.foundBalance[i+4] = true;
 						point.detailedBalanceScore++;
 						if(!$.inArray(point.adjLines[i].direction, point.balanceTypes)) {
 							point.balanceTypes.push(point.adjLines[i].direction);
-							console.log("Found balance for point " + point.id + " of direction " + point.adjLines[i].direction);
+							//console.log("Found balance for point " + point.id + " of direction " + point.adjLines[i].direction);
 						}
 					}
 				}
@@ -96,7 +96,7 @@ var createPoint = function(){
 					//console.log(point.adjLines[pair90]);
 					
 					if(point.adjLines[i] !== null && point.adjLines[pair90] !== null){
-						console.log("Found a 90Degree balance " + i + ", " + pair90);
+						//console.log("Found a 90Degree balance " + i + ", " + pair90);
 						point.foundBalance[i] = true;
 						point.foundBalance[pair90] = true;
 						point.detailedBalanceScore++;
@@ -107,7 +107,7 @@ var createPoint = function(){
 						else balanceType = "hori";
 						if(!$.inArray(balanceType, point.balanceTypes)) {
 							point.balanceTypes.push(balanceType);
-							console.log("Found balance for point " + point.id + " of direction " + balanceType);
+							//console.log("Found balance for point " + point.id + " of direction " + balanceType);
 						}
 						
 						// Now for extra calculation for triplets in the detailedBalanceScore
@@ -115,12 +115,12 @@ var createPoint = function(){
 						var innerBisect = (i+1)%8;
 						var outerBisect = (i+5)%8;
 						if(point.adjLines[innerBisect] !== null){
-							console.log("found an innerBisect at " + innerBisect);
+							//console.log("found an innerBisect at " + innerBisect);
 							point.foundBalance[innerBisect] = true;
 							point.detailedBalanceScore++;
 						}
 						if(point.adjLines[outerBisect] !== null){
-							console.log("found an outerBisect at " + outerBisect);
+							//console.log("found an outerBisect at " + outerBisect);
 							point.foundBalance[outerBisect] = true;
 							point.detailedBalanceScore++;
 						}
@@ -132,12 +132,16 @@ var createPoint = function(){
 				for(var i = 0; i < point.foundBalance.length; i++){
 					if(point.foundBalance[i] === true) point.balanceScore += 1/8;
 				}
-				console.log("FINAL SCORES FOUND FOR POINT " + point.id + ": " + point.balanceScore + ", " + point.detailedBalanceScore);
+				//console.log("FINAL SCORES FOUND FOR POINT " + point.id + ": " + point.balanceScore + ", " + point.detailedBalanceScore);
 			}
 		},
 		
-		scorePointDensity: function(){
+		scoreDensity: function(){
 			// For each adj line/point, add 1/8
+			point.densityScore = 0;
+			for(var i = 0; i < point.lines.length; i++){
+				point.densityScore += 1/8;
+			}
 		},
 		
 		findPointAtOtherEndOfLine: function(line){
@@ -366,6 +370,40 @@ var createDesign = function(){
 		removePoint : function(x, y){
 			// Can only remove a point if all lines connected to it
 			// have also been removed
+		},
+		
+		// like "doesPointExist" except it returns the object too
+		getPointAtPosition: function(x, y){
+			var pointString = "" + x + y;
+			for(var i = 0; i < design.points.length; i++){
+				if(design.points[i].position.x === x && design.points[i].position.y === y) {
+				//if(design.points[i].id === pointString){
+					//console.log("GOT POINT AT POSITION " + x + ", " + y);
+					return design.points[i];
+				}
+			}
+			return null;
+		},
+		
+		//If this is a diagonal line, does a diagonal line exist that crosses it?
+		doesCrossLineExist: function(x1, y1, x2, y2){
+			if(x1 === x2 || y1 === y2) return false; // These are horizontal/vertical lines
+			
+			var newy1;
+			var newy2;
+			
+			if(y1 > y2){
+				newy1 = y1 - 1; // Lower y1
+				newy2 = y2 + 1; // Raise y2
+			} else if (y2 > y1){
+				newy1 = y1 + 1; // Raise y1
+				newy2 = y2 - 1; // Lower y2
+			}
+			if(design.doesLineExist(x1, newy1, x2, newy2)){
+				//console.log("FOUND CROSS LINE AT " + x1 + ", " + newy1 + ", " + x2 + ", " + newy2);
+				return true;
+			}
+			return false;
 		},
 		
 		doesLineExist : function(x1, y1, x2, y2){

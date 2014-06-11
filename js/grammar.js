@@ -27,7 +27,14 @@ var buildRules = function(){
 					yOffset: j,
 					precond: function(design, point, x, y){
 						// One of these i, j pairs will always exist because we're building off an existing line
-						return design.doesLineExist(point.position.x, point.position.y, point.position.x + x, point.position.y + y);
+						//console.log($("#noCrosses").prop('checked'));
+						if($("#noCrosses").prop('checked')){
+							//console.log("FORBIDDING CROSSED LINES!!!");
+							return (design.doesLineExist(point.position.x, point.position.y, point.position.x + x, point.position.y + y)
+								 || design.doesCrossLineExist(point.position.x, point.position.y, point.position.x + x, point.position.y + y));
+						} else {
+							return (design.doesLineExist(point.position.x, point.position.y, point.position.x + x, point.position.y + y));
+						}
 					},
 					execute: function(design, point, x, y){
 						//console.log("new line with offsets... " + x + ", " + y);
@@ -41,6 +48,7 @@ var buildRules = function(){
 	}
 	
 	console.log(rules.length + " rules generated");
+	console.log(rules);
 };
 
 var connectPoints = function(pt1, pt2, options){
@@ -62,7 +70,7 @@ var randomGrammarStart = function(design, x, y){
 	design.addLine(x, y, x + i, y + j);
 };
 
-// BE CAREFUL! DO THIS ONLY WITH COPY POINTS TO TEST FOR BALANCE!
+// BE CAREFUL! DO THIS ONLY WITH COPY POINTS
 var expandPhantomRule = function(point, ruleID){
 	var line = createLine(); // SUPER NULL
 	point.lines.push(line);
@@ -72,13 +80,74 @@ var expandPhantomRule = function(point, ruleID){
 	else if(rules[ruleID].xOffset === -1 && rules[ruleID].yOffset === 0) point.adjLines[6] = line;
 	else if(rules[ruleID].xOffset === 1 && rules[ruleID].yOffset === 0) point.adjLines[2] = line;
 	else if(rules[ruleID].xOffset === -1 && rules[ruleID].yOffset === 1) point.adjLines[5] = line;
-	else if(rules[ruleID].xOffset === 1 && rules[ruleID].yOffset === 1) point.adjLines[4] = line;
+	else if(rules[ruleID].xOffset === 0 && rules[ruleID].yOffset === 1) point.adjLines[4] = line;
 	else if(rules[ruleID].xOffset === 1 && rules[ruleID].yOffset === 1) point.adjLines[3] = line;
 	else if(rules[ruleID].xOffset === -1 && rules[ruleID].yOffset === -1) point.adjLines[7] = line;
 }
 
 var spreadDensityExpansion = function(design, options){
+	var possibleRules = [];
+	var minDensityAvg = 9999;
+	// Score all the density -- We need to do this before because of the endpoints
+	for(var i = 0; i < design.points.length; i++){
+		design.points[i].scoreDensity();
+	}
 	
+	for(var i = 0; i < design.points.length; i++){
+		for(var j = 0; j < rules.length; j++){
+			// Try out every rule on every point.
+			// 1. Test if it's viable
+			if(!rules[j].precond(design, design.points[i], rules[j].xOffset, rules[j].yOffset)){
+				// If it's viable, test how much it would increase the average density score of the endpoints by
+				
+				var avg1 = design.points[i].densityScore;
+				var avg2 = 0;
+				// Does the point exist?
+				var endPoint = design.getPointAtPosition(design.points[i].position.x + rules[j].xOffset, design.points[i].position.y + rules[j].yOffset);
+				if(endPoint !== null){
+					//console.log("found endpoint, using its density score: " + endPoint.densityScore);
+					// If it does, grab its density.
+					avg2 = endPoint.densityScore;
+				}
+				
+				var totalAvg = (avg1 + avg2)/2;
+				if(options) {
+					//console.log("OPTIONS FOUND");
+					//console.log(options);
+					if(options.endpoint){
+						//console.log("OPTIONS.ENDPOINT FOUND");
+						totalAvg = avg2;
+					}
+				}
+				//console.log("Densities calculated: " + avg1 + ", " + avg2 + " with total avg of " + totalAvg);
+				if(totalAvg < minDensityAvg) minDensityAvg = totalAvg;
+				
+				var ruleChoice = {
+					pointID: i,
+					ruleID: j,
+					densityAvg: totalAvg
+				}
+				possibleRules.push(ruleChoice);
+			}
+		}
+	}
+	
+	// Pick from the smallest density increases
+	// NOTE: If we just "pop" it will pick the first rule over and over.
+	// 		In this case, density has such limited ranges we want to randomly pick
+	//console.log(possibleRules);
+	var newRulePool = [];
+	for(var i = 0; i < possibleRules.length; i++){
+		if(possibleRules[i].densityAvg === minDensityAvg) newRulePool.push(possibleRules[i]);
+	}
+	console.log("Found " + newRulePool.length + " Rules with minDensityAverage " + minDensityAvg);
+	var chosenRule = newRulePool[Math.floor(Math.random() * newRulePool.length)];
+	//console.log(chosenRule);
+	//console.log(design.points[chosenRule.pointID]);
+	
+	// Execute that rule
+	rules[chosenRule.ruleID].execute(design, design.points[chosenRule.pointID], rules[chosenRule.ruleID].xOffset, rules[chosenRule.ruleID].yOffset);
+
 }
 
 // NOTE: This function only really makes sense with the detailedBalanceScore
@@ -105,11 +174,22 @@ var mostBalancedExpansion = function(design, options){
 	}
 	
 	// Rules have been made for all possible points and lines
-	console.log(possibleRules);
-	// Make and use a custom sort function for this array
-	// Sort the array
+	//console.log(possibleRules);
+	// Make and use a custom sort function for this array and sort it
+	possibleRules.sort(function(x, y){
+		if(x.dBSIncrease > y.dBSIncrease) return 1;
+		if(x.dBSIncrease < y.dBSIncrease) return -1;
+		return 0;
+	});
+	
 	// Pick the biggest dBSIncrease
+	//console.log(possibleRules);
+	var chosenRule = possibleRules.pop();
+	//console.log(chosenRule);
+	//console.log(design.points[chosenRule.pointID]);
+	
 	// Execute that rule
+	rules[chosenRule.ruleID].execute(design, design.points[chosenRule.pointID], rules[chosenRule.ruleID].xOffset, rules[chosenRule.ruleID].yOffset);
 }
 
 var balancedRandomExpansion = function(design, options){
