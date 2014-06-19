@@ -205,15 +205,15 @@ var balancedRandomExpansion = function(design, options){
 		if(!rules[chooseRule].precond(design, design.points[choosePoint], rules[chooseRule].xOffset, rules[chooseRule].yOffset)){
 			// This rule is valid. Would it increase balance?
 			design.points[choosePoint].scorePointBalance();
-			console.log(design.points[choosePoint].id + "..... Trying score... " + design.points[choosePoint].balanceScore);
+			//console.log(design.points[choosePoint].id + "..... Trying score... " + design.points[choosePoint].balanceScore);
 			var cPoint = copyPoint(design.points[choosePoint]);
 			expandPhantomRule(cPoint, chooseRule);
 			cPoint.scorePointBalance();
 			//console.log("Phantom copy with new line: " + cPoint.balanceScore);
 			if(cPoint.balanceScore > design.points[choosePoint].balanceScore){
-				console.log("rule expansion occuring");
+				//console.log("rule expansion occuring");
 				console.log(rules[chooseRule]);
-				console.log("!!!!! FOUND A BALANCE INCREASE! " + cPoint.balanceScore + " > " + design.points[choosePoint].balanceScore);
+				//console.log("!!!!! FOUND A BALANCE INCREASE! " + cPoint.balanceScore + " > " + design.points[choosePoint].balanceScore);
 				rules[chooseRule].execute(design, design.points[choosePoint], rules[chooseRule].xOffset, rules[chooseRule].yOffset);
 				return true;
 			}
@@ -255,9 +255,10 @@ var randomPostProduction = function(design, options){
 		smallestY: 9999,
 		width: -1,
 		height:-1,
-		xOffset: 0, // Math.floor(Math.random() *4) -2,
-		yOffset: 0, //Math.floor(Math.random() *4) -2
+		xOffset: $("#spinnerX").spinner("value"), //0, // Math.floor(Math.random() *4) -2,
+		yOffset: $("#spinnerY").spinner("value"),  //0, //Math.floor(Math.random() *4) -2
 	};
+	console.log(postDetails);
 	
 	for(var i = 0; i < design.points.length; i++){
 		if(design.points[i].position.x > postDetails.greatestX) postDetails.greatestX = design.points[i].position.x;

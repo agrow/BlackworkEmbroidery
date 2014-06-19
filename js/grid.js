@@ -66,6 +66,51 @@ var nodeClick = function(){
 	d3.select(this).style("fill", "red");
 };
 
+var lineClick = function(){
+	// Remove the line	
+	var lineName = d3.select(this).attr("id");
+	lineName = lineName.substring(5);
+	console.log("line name to delete: " + lineName);
+	for(var i = 0; i < allDesigns.length; i++) {
+		allDesigns[i].removeLine(lineName);
+	}
+	d3.select(this).remove();
+};
+
+var lineMouseEnter = function(){
+	// Make bigger
+	d3.select(this).style("stroke-width", 5);
+	// Maybe show an info pane?
+	
+};
+
+var lineMouseLeave = function(){
+	// Make smaller
+	d3.select(this).style("stroke-width", 3);
+	// Maybe hide an info pane?
+};
+
+var drawDesignLine = function(svgElement, line, options){
+
+	svgElement.append("line")
+		.attr("x1", line.point1.position.x * gridSpacing)
+		.attr("y1", line.point1.position.y * gridSpacing)
+		.attr("x2", line.point2.position.x * gridSpacing)
+		.attr("y2", line.point2.position.y * gridSpacing)
+		.attr("stroke-width", 3)
+		.attr("stroke", "#000000")
+		.attr("stroke-linecap", "round")
+		.attr("id", "line_" +line.id)
+		.attr("class", function(d){
+			if(options && options.class) return options.class;
+			else return "";
+		})
+		.on("mouseover", lineMouseEnter)
+		.on("mouseout", lineMouseLeave)
+		.on("click", lineClick);
+	
+};
+
 var drawDensityColorMap = function(design){
 	var svgElement = d3.selectAll("svg");
 	
@@ -117,27 +162,7 @@ var drawDesignOnGrid = function(design, options){
 	for(var i = 0; i < design.lines.length; i++){
 		//console.log("drawing line... " + (design.lines[i].point1.position.x * gridSpacing) + ", " + design.lines[i].point1.position.y * gridSpacing + " /// " +
 		//							   + (design.lines[i].point2.position.x * gridSpacing) + ", " + design.lines[i].point2.position.y * gridSpacing);
-		if(options && options.class){
-			svgElement.append("line")
-				.attr("x1", design.lines[i].point1.position.x * gridSpacing)
-				.attr("y1", design.lines[i].point1.position.y * gridSpacing)
-				.attr("x2", design.lines[i].point2.position.x * gridSpacing)
-				.attr("y2", design.lines[i].point2.position.y * gridSpacing)
-				.attr("stroke-width", 3)
-				.attr("stroke", "#000000")
-				.attr("stroke-linecap", "round")
-				.attr("class", options.class);
-				
-		} else {
-			svgElement.append("line")
-				.attr("x1", design.lines[i].point1.position.x * gridSpacing)
-				.attr("y1", design.lines[i].point1.position.y * gridSpacing)
-				.attr("x2", design.lines[i].point2.position.x * gridSpacing)
-				.attr("y2", design.lines[i].point2.position.y * gridSpacing)
-				.attr("stroke-width", 3)
-				.attr("stroke", "#000000")
-				.attr("stroke-linecap", "round");
-		}
+		drawDesignLine(svgElement, design.lines[i], options);
 	}
 	console.log("Design drawn " + design.lines.length + " lines.");
 };
@@ -202,19 +227,19 @@ var drawOneMoreLine = function(design){
 	if(design.lastAddedLine !== null){
 		var svgElement = d3.selectAll("svg");
 		
-		svgElement.append("line")
-			.attr("x1", design.lastAddedLine.point1.position.x * gridSpacing)
-			.attr("y1", design.lastAddedLine.point1.position.y * gridSpacing)
-			.attr("x2", design.lastAddedLine.point2.position.x * gridSpacing)
-			.attr("y2", design.lastAddedLine.point2.position.y * gridSpacing)
-			.attr("stroke-width", 3)
-			.attr("stroke", "#000000")
-			.attr("stroke-linecap", "round");
+		drawDesignLine(svgElement, design.lastAddedLine);
 	}
 }
 
 var removeObjectsWithClassName = function(name){
 	var svgElements = d3.selectAll("." + name);
+	//console.log("SVG ELEMENTS!?!?!?!?!?!!! ");
+	//console.log(svgElements);
+	svgElements.remove();
+}
+
+var removeObjectByID = function(id){
+	var svgElements = d3.selectAll("#" + id);
 	console.log("SVG ELEMENTS!?!?!?!?!?!!! ");
 	console.log(svgElements);
 	svgElements.remove();

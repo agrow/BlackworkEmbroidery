@@ -687,7 +687,8 @@ button.ui-button::-moz-focus-inner {
 	margin: .2em 0;
 	vertical-align: middle;
 	margin-left: .4em;
-	margin-right: 22px;
+	margin-right: 10px;
+	width: 50px;
 }
 .ui-spinner-button {
 	width: 16px;

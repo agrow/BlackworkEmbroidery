@@ -187,6 +187,11 @@ $( document ).ready(function() {
 		destructive.addAllLines(testDesign.lines);
 		drawDesignOnGridAsFill(destructive, {class: "designManip"});
 	});
+	
+	$( "#spinnerX" ).spinner();
+	$( "#spinnerX" ).spinner("value", 0);
+	$( "#spinnerY" ).spinner();
+	$( "#spinnerY" ).spinner("value", 0);
 });
 
 var randomRestart = function(design){

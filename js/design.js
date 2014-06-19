@@ -25,6 +25,7 @@ var createPoint = function(){
 		update: function(){
 			point.findID();
 		},
+		parent: null,
 		position: createPosition(),
 		// Point and Line connections
 		//0: null, // Up
@@ -202,6 +203,7 @@ var createLine = function(){
 			line.findDirection(); // This also finds the point orientation
 			line.findID();
 		},
+		parent: null,
 		point1: createPoint(),
 		point2: createPoint(),
 		direction: "NA",
@@ -309,10 +311,23 @@ var createLine = function(){
 			}
 			 
 		},
+		
+		removeMe: function(){
+			var parentDesign = allDesigns[line.parent];
+			// For start and end points:
+				// Does this point connect to any other points?
+				//		If so, disconnect the line and leave the point
+				//		If not, remove the point
+			// Remove line
+			
+		}
 	};
 	
 	return line;
 };
+
+var designCount = 0;
+var allDesigns = [];
 
 var createDesign = function(){
 	var design = {
@@ -323,6 +338,7 @@ var createDesign = function(){
 		smallestX: 9999, 
 		greatestY: -9999,
 		smallestY: 9999,
+		id: designCount,
 		
 		resetDimensionMarkers : function(){
 			design.greatestX= -9999;
@@ -367,9 +383,31 @@ var createDesign = function(){
 			design.points.push(pt);
 			return pt;
 		},
-		removePoint : function(x, y){
+		removePoint : function(name){
 			// Can only remove a point if all lines connected to it
 			// have also been removed
+			for(var i = 0; i < design.points.length; i ++){
+				if(design.points[i].id === name){
+					console.log("DESIGN " + design.id + " owns the point " + name);
+					console.log(design.points[i].lines);
+					if(design.points[i].lines.length > 0){
+						console.log("POINT " + name + " has connected lines: Cannot remove.");
+						return false;
+					} else {
+					
+						// Remove point
+						if(design.points.length === 1){
+							console.log("THE DESIGN CANNOT BE EMPTY! LEAVE THIS LAST POINT!");
+							return false;
+						} else {
+							design.points.splice(i, 1);
+							return true;
+						}
+					}
+				}
+			}
+			console.log("POINT " + name + " not found in design " + design.id);
+			return false;
 		},
 		
 		// like "doesPointExist" except it returns the object too
@@ -459,6 +497,7 @@ var createDesign = function(){
 				newLine.point1.update();
 				newLine.point2.update();
 				newLine.update();
+				newLine.point1.parent = newLine.point2.parent = newLine.parent = design.id;
 				// Add line to the design
 				design.lines.push(newLine);
 				design.lastAddedLine = newLine;
@@ -476,12 +515,147 @@ var createDesign = function(){
 							   newLines[i].point2.position.x, newLines[i].point2.position.y);
 			}
 		},
-		removeLine : function() {
-			// For start and end points:
-				// Does this point connect to any other points?
-				//		If so, disconnect the line and leave the point
-				//		If not, remove the point
-			// Remove line
+		removeLine : function(name) {
+			for(var i = 0; i < design.lines.length; i ++){
+				if(design.lines[i].id === name){
+					console.log("DESIGN " + design.id + " owns the line " + name);
+					var line = design.lines[i];
+					console.log(line);
+					// For start and end points:
+					// Does this point connect to any other points?
+					var idToDelete = -1;
+					var found = false;
+					// Scrub point 1's lists of this line and its connections
+					// POINT 1: LINES ///////////////////////////////////////////////////////////
+					for(var j = 0; j < line.point1.lines.length; j++){
+						if(!found && line.point1.lines[j].id === name) {
+							idToDelete = j;
+							found = true;
+						}
+					}
+					if(found){
+						console.log("p1 phase 1 deleting ID: "  + idToDelete);
+						console.log(line.point1.lines + " with length " + line.point1.lines.length);
+						line.point1.lines.splice(idToDelete, 1);
+						console.log(line.point1.lines + " with length " + line.point1.lines.length);
+					}
+					// POINT 1: POINTS ///////////////////////////////////////////////////////////
+
+					found = false;
+					for(var j = 0; j < line.point1.points.length; j++){
+						if(!found && line.point1.points[j].id === line.point2.id){
+							idToDelete = j;
+							found = true;
+						} 
+					}
+					if(found){
+						console.log("p1 phase 2 deleting ID: "  + idToDelete);
+						console.log(line.point1.points + " with length " + line.point1.points.length);
+						line.point1.points.splice(idToDelete, 1);
+						console.log(line.point1.points + " with length " + line.point1.points.length);
+					}
+
+					// POINT 1: ADJLINES ///////////////////////////////////////////////////////////
+					found = false;
+					for(var j = 0; j < line.point1.adjLines.length; j++){
+						if(!found && line.point1.adjLines[j] !== null && line.point1.adjLines[j].id === name){
+							idToDelete = j;
+							found = true;
+						}
+					}
+					if(found){
+						console.log("p1 phase 3 deleting ID: "  + idToDelete);
+						console.log("adjLines " + line.point1.adjLines);
+						line.point1.adjLines[idToDelete] = null;
+						console.log("adjLines " + line.point1.adjLines);
+					}
+					// POINT 1: ADJPOINTS ///////////////////////////////////////////////////////////
+					found = false;
+					for(var j = 0; j < line.point1.adjPoints.length; j++){
+						if(!found && line.point1.adjPoints[j] !== null && line.point1.adjPoints[j].id === line.point2.id) {
+							idToDelete = j;
+							found = true;
+						}
+					}
+					if(found){
+						console.log("p1 phase 4 deleting ID: "  + idToDelete);
+						console.log("adjPoints " + line.point1.adjPoints);
+						line.point1.adjPoints[idToDelete] = null;
+						console.log("adjPoints " + line.point1.adjPoints);
+					}
+					
+					// Do the same for point 2's /////////////////////////////////////////////////
+					// POINT 2: LINES ///////////////////////////////////////////////////////////
+					found = false;
+					for(var j = 0; j < line.point2.lines.length; j++){
+						if(!found && line.point2.lines[j].id === name) {
+							idToDelete = j;
+							found = true;
+						}
+					}
+					if(found){
+						console.log("p2 phase 1 deleting ID: "  + idToDelete);
+						console.log(line.point2.lines + " with length " + line.point2.lines.length);
+						line.point2.lines.splice(idToDelete, 1);
+						console.log(line.point2.lines + " with length " + line.point2.lines.length);
+					}
+					// POINT 1: POINTS ///////////////////////////////////////////////////////////
+
+					found = false;
+					for(var j = 0; j < line.point2.points.length; j++){
+						if(!found && line.point2.points[j].id === line.point1.id){
+							idToDelete = j;
+							found = true;
+						} 
+					}
+					if(found){
+						console.log("p2 phase 2 deleting ID: "  + idToDelete);
+						console.log(line.point2.points + " with length " + line.point2.points.length);
+						line.point2.points.splice(idToDelete, 1);
+						console.log(line.point2.points + " with length " + line.point2.points.length);
+					}
+
+					// POINT 1: ADJLINES ///////////////////////////////////////////////////////////
+					found = false;
+					for(var j = 0; j < line.point2.adjLines.length; j++){
+						if(!found && line.point2.adjLines[j] !== null && line.point2.adjLines[j].id === name){
+							idToDelete = j;
+							found = true;
+						}
+					}
+					if(found){
+						console.log("p2 phase 3 deleting ID: "  + idToDelete);
+						console.log("adjLines " + line.point2.adjLines);
+						line.point2.adjLines[idToDelete] = null;
+						console.log("adjLines " + line.point2.adjLines);
+					}
+					// POINT 1: ADJPOINTS ///////////////////////////////////////////////////////////
+					found = false;
+					for(var j = 0; j < line.point2.adjPoints.length; j++){
+						if(!found && line.point2.adjPoints[j] !== null && line.point2.adjPoints[j].id === line.point1.id) {
+							idToDelete = j;
+							found = true;
+						}
+					}
+					if(found){
+						console.log("p2 phase 4 deleting ID: "  + idToDelete);
+						console.log("adjPoints " + line.point2.adjPoints);
+						line.point2.adjPoints[idToDelete] = null;
+						console.log("adjPoints " + line.point2.adjPoints);
+					}
+					
+					design.removePoint(design.lines[i].point1.id);
+					design.removePoint(design.lines[i].point2.id);
+					
+					// Remove line
+					design.lines.splice(i, 1);
+					console.log("REMOVAL PROCESS COMPLETE");
+					console.log(design);
+					return true;
+				}
+			}
+			console.log("LINE " + name + " not found in design " + design.id);
+			return false;
 		},
 		
 		reflectPoints: function(direction, value) {
@@ -696,5 +870,9 @@ var createDesign = function(){
 		}
 	};
 	
+	designCount++;
+	allDesigns.push(design);
 	return design;
 };
+
+
