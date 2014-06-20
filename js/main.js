@@ -74,12 +74,14 @@ $( document ).ready(function() {
 	
 	//drawDensityColorMap(testDesign);
 	drawDesignOnGrid(testDesign);
+	redrawDesignBoundary(testDesign);
 	
 	//drawMST(testDesign);
 	
 	$("#randExp").click(function(){
 		randomExpansion(testDesign);
 		drawOneMoreLine(testDesign);
+		redrawDesignBoundary(testDesign);
 	});
 	$("#randExpx5").click(function(){
 		for(var i = 0; i < 5; i++) $("#randExp").trigger("click");
@@ -97,6 +99,7 @@ $( document ).ready(function() {
 	$("#balaRandExp").click(function(){
 		balancedRandomExpansion(testDesign);
 		drawOneMoreLine(testDesign);
+		redrawDesignBoundary(testDesign);
 	});
 	$("#balaRandx5").click(function(){
 		for(var i = 0; i < 5; i++) $("#balaRandExp").trigger("click");
@@ -108,6 +111,7 @@ $( document ).ready(function() {
 	$("#mostBalaExp").click(function(){
 		mostBalancedExpansion(testDesign);
 		drawOneMoreLine(testDesign);
+		redrawDesignBoundary(testDesign);
 	});
 	
 	$("#mostBalax5").click(function(){
@@ -120,6 +124,7 @@ $( document ).ready(function() {
 	$("#minDensityExp").click(function(){
 		spreadDensityExpansion(testDesign);
 		drawOneMoreLine(testDesign);
+		redrawDesignBoundary(testDesign);
 	});
 	$("#minDensityx5").click(function(){
 		for(var i = 0; i < 5; i++) $("#minDensityExp").trigger("click");
@@ -131,6 +136,7 @@ $( document ).ready(function() {
 	$("#minDensityEndExp").click(function(){
 		spreadDensityExpansion(testDesign, {endpoint:true});
 		drawOneMoreLine(testDesign);
+		redrawDesignBoundary(testDesign);
 	});
 	
 	$("#minDensityEndx5").click(function(){
@@ -146,6 +152,7 @@ $( document ).ready(function() {
 		testDesign = createDesign();
 		randomRestart(testDesign);
 		drawDesignOnGrid(testDesign);
+		redrawDesignBoundary(testDesign);
 	});
 	
 	var designManip = null;
@@ -202,5 +209,5 @@ var randomRestart = function(design){
 	
 	randomGrammarStart(design, x, y);
 	console.log("Random restart complete.");
-}
+};
 

@@ -83,7 +83,7 @@ var expandPhantomRule = function(point, ruleID){
 	else if(rules[ruleID].xOffset === 0 && rules[ruleID].yOffset === 1) point.adjLines[4] = line;
 	else if(rules[ruleID].xOffset === 1 && rules[ruleID].yOffset === 1) point.adjLines[3] = line;
 	else if(rules[ruleID].xOffset === -1 && rules[ruleID].yOffset === -1) point.adjLines[7] = line;
-}
+};
 
 var spreadDensityExpansion = function(design, options){
 	var possibleRules = [];
@@ -148,7 +148,7 @@ var spreadDensityExpansion = function(design, options){
 	// Execute that rule
 	rules[chosenRule.ruleID].execute(design, design.points[chosenRule.pointID], rules[chosenRule.ruleID].xOffset, rules[chosenRule.ruleID].yOffset);
 
-}
+};
 
 // NOTE: This function only really makes sense with the detailedBalanceScore
 var mostBalancedExpansion = function(design, options){
@@ -167,7 +167,7 @@ var mostBalancedExpansion = function(design, options){
 					pointID: i,
 					ruleID: j,
 					dBSIncrease: cPoint.detailedBalanceScore - design.points[i].detailedBalanceScore
-				}
+				};
 				possibleRules.push(ruleChoice);
 			}
 		}
@@ -190,7 +190,7 @@ var mostBalancedExpansion = function(design, options){
 	
 	// Execute that rule
 	rules[chosenRule.ruleID].execute(design, design.points[chosenRule.pointID], rules[chosenRule.ruleID].xOffset, rules[chosenRule.ruleID].yOffset);
-}
+};
 
 var balancedRandomExpansion = function(design, options){
 	//for(var i = 0; i < design.points.length; i++){
@@ -221,7 +221,8 @@ var balancedRandomExpansion = function(design, options){
 		count++;
 	}
 	
-	console.log("In " + count + " tries, we could not find a way to increase balance through random selection.");
+	console.log("In " + count + " tries, we could not find a way to increase balance through random selection. Using random expansion.");
+	randomExpansion(design, options);
 };
 
 var randomExpansion = function(design, options){
@@ -288,25 +289,26 @@ var randomPostProduction = function(design, options){
 	} else if (firstManip === 1){
 		// Reflect
 		console.log("Reflecting for first manip");
-		newDesignAdditions.addAllLines(design.reflectPoints("x", postDetails.greatestX + postDetails.xOffset));
+		newDesignAdditions.addAllLines(design.reflectPoints("x", postDetails.greatestX + postDetails.xOffset/2));
 	} else if (firstManip === 2){
 		// Rotate Right
 		console.log("Rotating Right for first manip");
-		newDesignAdditions.addAllLines(design.rotateAroundArbitraryPoint(postDetails.greatestX + postDetails.xOffset, postDetails.greatestY + postDetails.yOffset, Math.PI/2));
+		newDesignAdditions.addAllLines(design.rotateAroundArbitraryPoint(postDetails.greatestX, postDetails.greatestY, Math.PI/2));
+		newDesignAdditions.translateTheseLines(postDetails.xOffset, 0);
 	} else if (firstManip ===3){
 		// Rotate Left
 		console.log("Rotating Left for first manip");
 		// This involves a rotate and translate
-		newDesignAdditions.addAllLines(design.rotateAroundArbitraryPoint(postDetails.greatestX + postDetails.xOffset, postDetails.greatestY + postDetails.yOffset, -Math.PI/2));
+		newDesignAdditions.addAllLines(design.rotateAroundArbitraryPoint(postDetails.greatestX, postDetails.greatestY, -Math.PI/2));
 		//newDesignAdditions.updateDimensions();
-		newDesignAdditions.translateTheseLines(postDetails.height + postDetails.xOffset, -(postDetails.width + postDetails.yOffset));
+		newDesignAdditions.translateTheseLines(postDetails.height + postDetails.xOffset, -(postDetails.width));
 	} else {
 		console.log("ERROR! first manip random is off: " + firstManip);
 	}
 	
 	// Randomly choose: Copy, Reflect, or rotate L/R to make a vertical manipulation
-	var secondManip = Math.floor(Math.random() * 4);
-	//var secondManip = 3;
+	//var secondManip = Math.floor(Math.random() * 4);
+	var secondManip = 3;
 	if(secondManip === 0){
 		// Copy
 		console.log("Copying for second manip");
@@ -315,14 +317,20 @@ var randomPostProduction = function(design, options){
 	} else if (secondManip === 1){
 		// Reflect
 		console.log("Reflecting for second manip");
-		newDesignAdditions.addAllLines(newDesignAdditions.reflectPoints("y", postDetails.greatestY + postDetails.yOffset));
-		newDesignAdditions.addAllLines(design.reflectPoints("y", postDetails.greatestY + postDetails.yOffset));
+		newDesignAdditions.addAllLines(newDesignAdditions.reflectPoints("y", postDetails.greatestY + postDetails.yOffset/2));
+		newDesignAdditions.addAllLines(design.reflectPoints("y", postDetails.greatestY + postDetails.yOffset/2));
 	} else if (secondManip === 2 || secondManip === 3){
 		// Rotate Right
 		console.log("Rotating Right/Left for second manip");
-		newDesignAdditions.addAllLines(newDesignAdditions.rotateAroundArbitraryPoint(postDetails.greatestX + postDetails.xOffset, postDetails.greatestY + postDetails.yOffset, Math.PI));
-		newDesignAdditions.addAllLines(design.rotateAroundArbitraryPoint(postDetails.greatestX + postDetails.xOffset, postDetails.greatestY + postDetails.yOffset, Math.PI));
-	//} else if (secondManip === 3){
+		var newDesignAdditionsTEMP = createDesign();
+		
+		newDesignAdditionsTEMP.addAllLines(design.rotateAroundArbitraryPoint(postDetails.greatestX, postDetails.greatestY, Math.PI));
+		
+		newDesignAdditionsTEMP.addAllLines(newDesignAdditions.rotateAroundArbitraryPoint(postDetails.greatestX, postDetails.greatestY, Math.PI));
+		newDesignAdditionsTEMP.translateTheseLines(postDetails.xOffset, 0);
+		newDesignAdditionsTEMP.translateTheseLines(0, postDetails.yOffset);
+		newDesignAdditions.addAllLines(newDesignAdditionsTEMP.lines);
+		//} else if (secondManip === 3){
 		// Rotate Left // exactly same as rotating right on the second pass, ignore!
 		//console.log("Rotating Left for second manip");
 	} else {

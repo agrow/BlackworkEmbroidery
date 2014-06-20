@@ -75,6 +75,8 @@ var lineClick = function(){
 		allDesigns[i].removeLine(lineName);
 	}
 	d3.select(this).remove();
+	// Redraw the design outline of the main design in case it's changed'
+	if(allDesigns[0]) redrawDesignBoundary(allDesigns[0]);
 };
 
 var lineMouseEnter = function(){
@@ -229,18 +231,34 @@ var drawOneMoreLine = function(design){
 		
 		drawDesignLine(svgElement, design.lastAddedLine);
 	}
-}
+};
+
+var redrawDesignBoundary = function(design){
+	var svgElement = d3.selectAll("svg");
+	removeObjectsWithClassName("designBoundary");
+	design.updateDimensions();
+	
+	svgElement.append("rect")
+		.attr("x", design.smallestX * gridSpacing - gridSpacing/2)
+		.attr("y", design.smallestY * gridSpacing - gridSpacing/2)
+		.attr("width", design.width * gridSpacing + gridSpacing)
+		.attr("height", design.height * gridSpacing + gridSpacing)
+		.attr("stroke-width", 2)
+		.attr("stroke", "pink")
+		.attr("fill", "none")
+		.attr("class", "designBoundary");
+};
 
 var removeObjectsWithClassName = function(name){
 	var svgElements = d3.selectAll("." + name);
 	//console.log("SVG ELEMENTS!?!?!?!?!?!!! ");
 	//console.log(svgElements);
 	svgElements.remove();
-}
+};
 
 var removeObjectByID = function(id){
 	var svgElements = d3.selectAll("#" + id);
 	console.log("SVG ELEMENTS!?!?!?!?!?!!! ");
 	console.log(svgElements);
 	svgElements.remove();
-}
+};

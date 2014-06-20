@@ -509,7 +509,7 @@ var createDesign = function(){
 		},
 		
 		addAllLines : function(newLines){
-			console.log("adding " + newLines.length + " new lines to the design");
+			//console.log("adding " + newLines.length + " new lines to the design");
 			for(var i = 0; i < newLines.length; i++){
 				design.addLine(newLines[i].point1.position.x, newLines[i].point1.position.y, 
 							   newLines[i].point2.position.x, newLines[i].point2.position.y);
@@ -788,8 +788,8 @@ var createDesign = function(){
 				
 			}
 			
-			console.log("new rotation lines...");
-			console.log(newLines);
+			//console.log("new rotation lines...");
+			//console.log(newLines);
 			return newLines;
 		},
 		
