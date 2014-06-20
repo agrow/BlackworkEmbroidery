@@ -7,6 +7,7 @@ var numDown;
 
 var clearSVG = function(){
 	var svgElement = d3.selectAll("svg");
+	
 };
 
 var sizeGrid = function(){
@@ -18,6 +19,7 @@ var drawGrid = function(){
 	console.log("Drawing grid...");
 	sizeGrid();
 	var svgElement = d3.selectAll("svg");
+	svgElement.on("mousemove", activeLineMouseMove);
 	
 	for(var i = 0; i < numAcross ; i++){
 		svgElement.append("line")
@@ -45,14 +47,18 @@ var drawGrid = function(){
 			svgElement.append("circle")
 				.attr("cx", i*gridSpacing)
 				.attr("cy", j*gridSpacing)
-				.attr("r", 3)
-				.style("fill", "grey")
+				.attr("r", 4)
+				.style("fill", "#A8A8A8")
 				.on("mouseover", function() {
-					d3.select(this).attr("r", 5);
+					d3.select(this).attr("r", 6)
+								   .attr("fill", "#686868");
 				})
 				.on("mouseout", function() {
-					d3.select(this).attr("r", 3);
+					d3.select(this).attr("r", 4)
+								   .attr("fill", "#A8A8A8");
 				})
+				//.on("mousedown", nodeMouseDown)
+				//.on("mouseup", nodeMouseUp);
 				.on("click", nodeClick);
 		}	
 	}
@@ -60,10 +66,115 @@ var drawGrid = function(){
 	console.log("Grid drawn.");
 };
 
+var makingLine = {
+	startX: -1,
+	startY: -1,
+	endX: -1,
+	endY: -1,
+	activeLine: false,
+	id: "activeDrawingLine",
+	restart: function(){
+		makingLine.startX = makingLine.endX = makingLine.startY = makingLine.endY = -1;
+		makingLine.activeLine = false;
+		var line = d3.selectAll("#" + makingLine.id).remove();
+		//console.log(makingLine);
+	}
+};
+
 var nodeClick = function(){
-	//console.log("I clicked on a node! or did I? What is this?");
-	//console.log(this);
-	d3.select(this).style("fill", "red");
+	console.log("clicked a node!");
+	
+	if(!makingLine.activeLine){
+		// Start the line
+		makingLine.activeLine = true;
+		makingLine.startX = d3.select(this).attr("cx");
+		makingLine.startY = d3.select(this).attr("cy");
+		console.log("Click1 on node at " + makingLine.startX + ", " + makingLine.startY);
+		
+		console.log(d3.mouse(this));
+		var mouse = d3.mouse(this);
+		
+		var svgElement = d3.selectAll("svg");
+		svgElement.append("line")
+			.attr("x1", makingLine.startX)
+			.attr("y1", makingLine.startY)
+			.attr("x2", mouse[0])
+			.attr("y2", mouse[1])
+			.attr("stroke-width", 2)
+			.attr("stroke", "#000000")
+			.attr("stroke-linecap", "round")
+			.attr("id", makingLine.id);
+	} else {
+		
+		// Active line, finish it if the line is valid ()
+		makingLine.endX = d3.select(this).attr("cx");
+		makingLine.endY = d3.select(this).attr("cy");
+		
+		if(Math.pow(makingLine.startX - makingLine.endX, 2) + Math.pow(makingLine.startY - makingLine.endY, 2) < Math.pow(1.5*gridSpacing, 2)){
+			
+			console.log("Click2 on node at " + makingLine.endX + ", " + makingLine.endY);
+			// Make new line and add it to design[0]
+			// Don't forget to divide by gridspace
+			allDesigns[0].addLine(makingLine.startX/gridSpacing, makingLine.startY/gridSpacing, makingLine.endX/gridSpacing, makingLine.endY/gridSpacing);
+			drawOneMoreLine(allDesigns[0]);
+			redrawDesignBoundary(allDesigns[0]);
+			
+			makingLine.restart();
+		}
+	}
+};
+
+var nodeMouseDown = function(){
+	/*
+	 makingLine.activeLine = true;
+	 makingLine.startX = d3.select(this).attr("cx");
+	 makingLine.startY = d3.select(this).attr("cy");
+	 console.log("Mouse down on node at " + makingLine.startX + ", " + makingLine.startY);
+	 
+	 console.log(d3.mouse(this));
+	 var mouse = d3.mouse(this);
+	 
+	 var svgElement = d3.selectAll("svg");
+	 svgElement.append("line")
+		.attr("x1", makingLine.startX)
+		.attr("y1", makingLine.startY)
+		.attr("x2", mouse[0])
+		.attr("y2", mouse[1])
+		.attr("stroke-width", 2)
+		.attr("stroke", "#000000")
+		.attr("stroke-linecap", "round")
+		.attr("id", makingLine.id);*/
+};
+
+var activeLineMouseMove = function(){
+	// grab svg activeLine. Change its x and y to mouseX and mouseY
+	//console.log(makingLine.activeLine);
+	if(makingLine.activeLine){
+		var mouse = d3.mouse(this);
+		//console.log("updating mouse position: " + mouse);
+		var line = d3.selectAll("#" + makingLine.id);
+		if(makingLine.startY < mouse[1]){
+			line.attr("x2", mouse[0])
+				.attr("y2", mouse[1]-2);
+		} else {
+			line.attr("x2", mouse[0])
+				.attr("y2", mouse[1]+2);
+		}
+	}
+};
+
+var nodeMouseUp = function(){
+	/*
+	makingLine.endX = d3.select(this).attr("cx");
+	makingLine.endY = d3.select(this).attr("cy");
+	console.log("Mouse up on node at " + makingLine.endX + ", " + makingLine.endY);
+	// Make new line and add it to design[0]
+	// Don't forget to divide by gridspace
+	allDesigns[0].addLine(makingLine.startX/gridSpacing, makingLine.startY/gridSpacing, makingLine.endX/gridSpacing, makingLine.endY/gridSpacing);
+	drawOneMoreLine(allDesigns[0]);
+	redrawDesignBoundary(allDesigns[0]);
+	
+	makingLine.restart();*/
 };
 
 var lineClick = function(){
@@ -239,14 +350,18 @@ var redrawDesignBoundary = function(design){
 	design.updateDimensions();
 	
 	svgElement.append("rect")
-		.attr("x", design.smallestX * gridSpacing - gridSpacing/2)
-		.attr("y", design.smallestY * gridSpacing - gridSpacing/2)
-		.attr("width", design.width * gridSpacing + gridSpacing)
-		.attr("height", design.height * gridSpacing + gridSpacing)
+		.attr("x", design.smallestX * gridSpacing - gridSpacing/4)
+		.attr("y", design.smallestY * gridSpacing - gridSpacing/4)
+		.attr("width", design.width * gridSpacing + gridSpacing/2)
+		.attr("height", design.height * gridSpacing + gridSpacing/2)
 		.attr("stroke-width", 2)
 		.attr("stroke", "pink")
 		.attr("fill", "none")
 		.attr("class", "designBoundary");
+};
+
+var redrawPostProductionBoundary = function(postProdDesign) {
+	
 };
 
 var removeObjectsWithClassName = function(name){
