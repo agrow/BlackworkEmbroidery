@@ -1,3 +1,7 @@
+var testDesign;
+var designManip;
+var destructive;
+
 
 $( document ).ready(function() {
 	// Import the rest of the functions
@@ -12,7 +16,7 @@ $( document ).ready(function() {
 	
 	drawGrid();
 	
-	var testDesign = createDesign();
+	testDesign = createDesign();
 	//console.log(testDesign);
 	/*
 	testDesign.addLine(1, 1, 2, 2); // Diag down
@@ -75,7 +79,7 @@ $( document ).ready(function() {
 	//drawDensityColorMap(testDesign);
 	drawDesignOnGrid(testDesign);
 	redrawDesignBoundary(testDesign);
-	redrawHoop();
+	findCenterAndRedrawHoop();
 	
 	//drawMST(testDesign);
 	
@@ -83,6 +87,7 @@ $( document ).ready(function() {
 		randomExpansion(testDesign);
 		drawOneMoreLine(testDesign);
 		redrawDesignBoundary(testDesign);
+		findCenterAndRedrawHoop();
 	});
 	$("#randExpx5").click(function(){
 		for(var i = 0; i < 5; i++) $("#randExp").trigger("click");
@@ -101,6 +106,7 @@ $( document ).ready(function() {
 		balancedRandomExpansion(testDesign);
 		drawOneMoreLine(testDesign);
 		redrawDesignBoundary(testDesign);
+		findCenterAndRedrawHoop();
 	});
 	$("#balaRandx5").click(function(){
 		for(var i = 0; i < 5; i++) $("#balaRandExp").trigger("click");
@@ -113,6 +119,7 @@ $( document ).ready(function() {
 		mostBalancedExpansion(testDesign);
 		drawOneMoreLine(testDesign);
 		redrawDesignBoundary(testDesign);
+		findCenterAndRedrawHoop();
 	});
 	
 	$("#mostBalax5").click(function(){
@@ -126,6 +133,7 @@ $( document ).ready(function() {
 		spreadDensityExpansion(testDesign);
 		drawOneMoreLine(testDesign);
 		redrawDesignBoundary(testDesign);
+		findCenterAndRedrawHoop();
 	});
 	$("#minDensityx5").click(function(){
 		for(var i = 0; i < 5; i++) $("#minDensityExp").trigger("click");
@@ -138,6 +146,7 @@ $( document ).ready(function() {
 		spreadDensityExpansion(testDesign, {endpoint:true});
 		drawOneMoreLine(testDesign);
 		redrawDesignBoundary(testDesign);
+		findCenterAndRedrawHoop();
 	});
 	
 	$("#minDensityEndx5").click(function(){
@@ -154,20 +163,23 @@ $( document ).ready(function() {
 		randomRestart(testDesign);
 		drawDesignOnGrid(testDesign);
 		redrawDesignBoundary(testDesign);
+		findCenterAndRedrawHoop();
 	});
 	
-	var designManip = null;
+	//var designManip = null;
 	
 	$("#randPost").click(function(){
 		// Remove any previous designManip things
 		removeObjectsWithClassName("designManip");
 		designManip = randomPostProduction(testDesign);
 		drawDesignOnGrid(designManip, {class: "designManip"});
+		findCenterAndRedrawHoop();
 	});
 	
 	$("#clearPost").click(function(){
 		// Remove any previous designManip things
 		removeObjectsWithClassName("designManip");
+		findCenterAndRedrawHoop();
 	});
 	
 	$("#makeEdge").click(function(){
@@ -175,7 +187,7 @@ $( document ).ready(function() {
 		removeObjectsWithClassName("designManip");
 		
 		
-		var destructive = createDesign();
+		destructive = createDesign();
 		if(designManip !== null) {
 			drawDesignOnGrid(designManip, {class: "designManip"});
 			destructive.addAllLines(designManip.lines);
@@ -183,6 +195,7 @@ $( document ).ready(function() {
 		
 		destructive.addAllLines(testDesign.lines);
 		drawDesignOnGridAsEdge(destructive, {class: "designManip", skipMiddleDesign: true});
+		findCenterAndRedrawHoop();
 	});
 	
 	$("#makeFill").click(function(){
@@ -190,7 +203,7 @@ $( document ).ready(function() {
 		removeObjectsWithClassName("designManip");
 		
 		
-		var destructive = createDesign();
+		//var destructive = createDesign();
 		if(designManip !== null) {
 			drawDesignOnGrid(designManip, {class: "designManip"});
 			destructive.addAllLines(designManip.lines);
@@ -198,6 +211,7 @@ $( document ).ready(function() {
 		
 		destructive.addAllLines(testDesign.lines);
 		drawDesignOnGridAsFill(destructive, {class: "designManip"});
+		findCenterAndRedrawHoop();
 	});
 	
 	$( "#spinnerX" ).spinner();
@@ -209,6 +223,16 @@ $( document ).ready(function() {
 	$( "#spinnerFillX" ).spinner("value", 0);
 	$( "#spinnerFillY" ).spinner();
 	$( "#spinnerFillY" ).spinner("value", 0);
+	
+	
+	$("#generatePrint").click(function(){
+		var superDesign = createDesign();
+		superDesign.addAllLines(testDesign.lines);
+		superDesign.addAllLines(designManip.lines);
+		superDesign.addAllLines(destructive.lines);
+		
+		generatePrintPattern(superDesign, gridSpacing);
+	});
 });
 
 var randomRestart = function(design){

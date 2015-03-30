@@ -249,16 +249,26 @@ var randomExpansion = function(design, options){
 };
 
 var randomPostProduction = function(design, options){
-	var postDetails = {
-		greatestX: -9999,
-		smallestX: 9999,
-		greatestY: -9999,
-		smallestY: 9999,
-		width: -1,
-		height:-1,
-		xOffset: $("#spinnerX").spinner("value"), //0, // Math.floor(Math.random() *4) -2,
-		yOffset: $("#spinnerY").spinner("value"),  //0, //Math.floor(Math.random() *4) -2
-	};
+	var postDetails;
+	
+	if(options && options.postDetails){
+		console.log("Loading post Details: ", options.postDetails);
+		postDetails = options.postDetails;
+		
+	} else {
+		postDetails = {
+			greatestX: -9999,
+			smallestX: 9999,
+			greatestY: -9999,
+			smallestY: 9999,
+			width: -1,
+			height:-1,
+			xOffset: $("#spinnerX").spinner("value"), //0, // Math.floor(Math.random() *4) -2,
+			yOffset: $("#spinnerY").spinner("value"),  //0, //Math.floor(Math.random() *4) -2
+			firstManip: -1,
+			secondManip: -1,
+		};
+	}
 	console.log(postDetails);
 	
 	for(var i = 0; i < design.points.length; i++){
@@ -280,7 +290,15 @@ var randomPostProduction = function(design, options){
 	
 	var newDesignAdditions = createDesign();
 	// Randomly choose: Copy, Reflect, or rotate L/R to make a horizontal manipulation
-	var firstManip = Math.floor(Math.random() * 4);
+	var firstManip;
+	
+	if(postDetails.firstManip >= 0){
+		firstManip = postDetails.firstManip;
+	} else {
+		firstManip = Math.floor(Math.random() * 4);
+		postDetails.firstManip = firstManip;
+	}
+
 	//var firstManip = 3;
 	if(firstManip === 0){
 		// Copy
@@ -308,7 +326,14 @@ var randomPostProduction = function(design, options){
 	
 	// Randomly choose: Copy, Reflect, or rotate L/R to make a vertical manipulation
 	//var secondManip = Math.floor(Math.random() * 4);
-	var secondManip = 3;
+	var secondManip; // = 3;
+	if(postDetails.secondManip >= 0){
+		secondManip = postDetails.secondManip;
+	} else {
+		secondManip = 3;
+		postDetails.secondManip = secondManip;
+	}
+	
 	if(secondManip === 0){
 		// Copy
 		console.log("Copying for second manip");
@@ -345,6 +370,8 @@ var randomPostProduction = function(design, options){
 	// possibly rotate around it 90 degrees
 	// or rotate and then reflect/copy
 	// use bottom-right corner to bisect diagonally and reflect across that. Repeat some other step from before to distribute
+	
+	newDesignAdditions.postProductionDetails = postDetails;
 	
 	return newDesignAdditions;
 };

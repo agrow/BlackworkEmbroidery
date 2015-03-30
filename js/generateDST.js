@@ -22,7 +22,7 @@ var hoop = {
 	maxNumStitchHeight:0, // Will be calculated to 50
 	fileUnitsWidth: 1000,
 	fileUnitsHeight: 1000,
-}
+};
 
 var findMaxNumHoopStitches = function(){
 	hoop.maxNumStitchHeight = hoop.fileUnitsHeight/hoop.unitsPerStitch;
@@ -39,7 +39,27 @@ var generateHoopDimensions = function(gridPixelSize){
 	
 	hoop.x = hoop.centerX - hoop.width/2;
 	hoop.y = hoop.centerY - hoop.height/2;
-}
+};
+
+var generatePrintPattern = function(design, gridSpacing){
+	
+	// Remove all lines that would be outside the hoop
+	console.log("design starting out with # lines: " + design.lines.length);
+	for(var i = 0; i < design.lines.length; i++){
+		var line = design.lines[i];
+		if( line.point1.position.x * gridSpacing < hoop.x || line.point1.position.x * gridSpacing > hoop.x + hoop.width || 
+			line.point2.position.x * gridSpacing < hoop.x || line.point2.position.x * gridSpacing > hoop.x + hoop.width || 
+			line.point1.position.y * gridSpacing < hoop.y || line.point1.position.x * gridSpacing > hoop.y + hoop.height || 
+			line.point2.position.y * gridSpacing < hoop.y || line.point2.position.x * gridSpacing > hoop.y + hoop.height){
+				console.log("trying to remove line " + line.name);
+				design.removeLine(line.name); 
+		}
+	}
+	
+	console.log("design AFTER TRIM # lines: " + design.lines.length);
+	
+
+};
 
 
 

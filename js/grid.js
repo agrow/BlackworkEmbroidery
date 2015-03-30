@@ -179,8 +179,8 @@ var drawDesignLine = function(svgElement, line, options){
 		.attr("stroke-linecap", "round")
 		.attr("id", "line_" +line.id)
 		.attr("class", function(d){
-			if(options && options.class) return options.class;
-			else return "";
+			if(options && options.class) return options.class + " stitchLine";
+			else return "stitchLine";
 		})
 		.on("mouseover", lineMouseEnter)
 		.on("mouseout", lineMouseLeave)
@@ -388,9 +388,39 @@ var removeObjectByID = function(id){
 
 
 var findCenterAndRedrawHoop = function(){
+	var svgElements = d3.selectAll(".stitchLine");
+	console.log("finding the center of a design...", svgElements);
+	var lines = svgElements[0];
+	var minX = 9999, minY = 9999;
+	var maxX = -9999, maxY = -9999;
 	
+	for(var i = 0; i < lines.length; i++){
+		var x1 = parseFloat(lines[i].getAttribute("x1"));
+		var x2 = parseFloat(lines[i].getAttribute("x2"));
+		var y1 = parseFloat(lines[i].getAttribute("y1"));
+		var y2 = parseFloat(lines[i].getAttribute("y2"));
+		//console.log("Checking line... " + x1 + ", " + y1 + ", " + x2 + ", " + y2);
+		
+		if(minX > x1) minX = x1;
+		if(minX > x2) minX = x2;
+		if(maxX < x1) maxX = x1;
+		if(maxX < x2) maxX = x2;
+		
+		if(minY > y1) minY = y1;
+		if(minY > y2) minY = y2;
+		if(maxY < y1) maxY = y1;
+		if(maxY < y2) maxY = y2;
+		
+		//console.log("Min/maxes... " + minX + ", " + minY + ", " + maxX + ", " + maxY);
+	}
 	
-}
+	hoop.centerX = minX + Math.floor((maxX - minX)/2);
+	hoop.centerY = minY + Math.floor((maxY - minY)/2);
+	
+	console.log("new center set:" + hoop.centerX + ", " + hoop.centerY);
+	
+	redrawHoop();
+};
 
 
 
@@ -411,4 +441,4 @@ var redrawHoop = function(){
 		.attr("stroke", "blue")
 		.attr("fill", "none")
 		.attr("class", "hoopBoundary");
-}
+};
