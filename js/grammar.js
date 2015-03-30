@@ -126,7 +126,7 @@ var spreadDensityExpansion = function(design, options){
 					pointID: i,
 					ruleID: j,
 					densityAvg: totalAvg
-				}
+				};
 				possibleRules.push(ruleChoice);
 			}
 		}

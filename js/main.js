@@ -173,21 +173,25 @@ $( document ).ready(function() {
 		// Remove any previous designManip things
 		removeObjectsWithClassName("designManip");
 		
+		
 		var destructive = createDesign();
 		if(designManip !== null) {
+			drawDesignOnGrid(designManip, {class: "designManip"});
 			destructive.addAllLines(designManip.lines);
 		}
 		
 		destructive.addAllLines(testDesign.lines);
-		drawDesignOnGridAsEdge(destructive, {class: "designManip"});
+		drawDesignOnGridAsEdge(destructive, {class: "designManip", skipMiddleDesign: true});
 	});
 	
 	$("#makeFill").click(function(){
 		// Remove any previous designManip things
 		removeObjectsWithClassName("designManip");
 		
+		
 		var destructive = createDesign();
 		if(designManip !== null) {
+			drawDesignOnGrid(designManip, {class: "designManip"});
 			destructive.addAllLines(designManip.lines);
 		}
 		
@@ -199,6 +203,11 @@ $( document ).ready(function() {
 	$( "#spinnerX" ).spinner("value", 0);
 	$( "#spinnerY" ).spinner();
 	$( "#spinnerY" ).spinner("value", 0);
+	
+	$( "#spinnerFillX" ).spinner();
+	$( "#spinnerFillX" ).spinner("value", 0);
+	$( "#spinnerFillY" ).spinner();
+	$( "#spinnerFillY" ).spinner("value", 0);
 });
 
 var randomRestart = function(design){

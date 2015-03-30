@@ -124,28 +124,6 @@ var nodeClick = function(){
 	}
 };
 
-var nodeMouseDown = function(){
-	/*
-	 makingLine.activeLine = true;
-	 makingLine.startX = d3.select(this).attr("cx");
-	 makingLine.startY = d3.select(this).attr("cy");
-	 console.log("Mouse down on node at " + makingLine.startX + ", " + makingLine.startY);
-	 
-	 console.log(d3.mouse(this));
-	 var mouse = d3.mouse(this);
-	 
-	 var svgElement = d3.selectAll("svg");
-	 svgElement.append("line")
-		.attr("x1", makingLine.startX)
-		.attr("y1", makingLine.startY)
-		.attr("x2", mouse[0])
-		.attr("y2", mouse[1])
-		.attr("stroke-width", 2)
-		.attr("stroke", "#000000")
-		.attr("stroke-linecap", "round")
-		.attr("id", makingLine.id);*/
-};
-
 var activeLineMouseMove = function(){
 	// grab svg activeLine. Change its x and y to mouseX and mouseY
 	//console.log(makingLine.activeLine);
@@ -161,20 +139,6 @@ var activeLineMouseMove = function(){
 				.attr("y2", mouse[1]+2);
 		}
 	}
-};
-
-var nodeMouseUp = function(){
-	/*
-	makingLine.endX = d3.select(this).attr("cx");
-	makingLine.endY = d3.select(this).attr("cy");
-	console.log("Mouse up on node at " + makingLine.endX + ", " + makingLine.endY);
-	// Make new line and add it to design[0]
-	// Don't forget to divide by gridspace
-	allDesigns[0].addLine(makingLine.startX/gridSpacing, makingLine.startY/gridSpacing, makingLine.endX/gridSpacing, makingLine.endY/gridSpacing);
-	drawOneMoreLine(allDesigns[0]);
-	redrawDesignBoundary(allDesigns[0]);
-	
-	makingLine.restart();*/
 };
 
 var lineClick = function(){
@@ -270,26 +234,32 @@ var drawMST = function(design){
 };
 
 var drawDesignOnGrid = function(design, options){
-	console.log("Drawing design...");
+	//console.log("Drawing design...");
 	var svgElement = d3.selectAll("svg");
 	for(var i = 0; i < design.lines.length; i++){
 		//console.log("drawing line... " + (design.lines[i].point1.position.x * gridSpacing) + ", " + design.lines[i].point1.position.y * gridSpacing + " /// " +
 		//							   + (design.lines[i].point2.position.x * gridSpacing) + ", " + design.lines[i].point2.position.y * gridSpacing);
 		drawDesignLine(svgElement, design.lines[i], options);
 	}
-	console.log("Design drawn " + design.lines.length + " lines.");
+	//console.log("Design drawn " + design.lines.length + " lines.");
 };
 
 var drawDesignOnGridAsEdge = function(design, options){
 	var testCount = 0;
 	// Determine how many designs we can fit on here
 	design.updateDimensions();
-	var numDesigns = Math.ceil(numAcross/design.width) +2;
-	console.log("Can fit " + numDesigns + " on X axis... " + numAcross + "/" + design.width);
+	var leftSide = design.smallestX;
+	if(options && options.leftSide){
+		console.log("found leftside options: " + options.leftSide);
+		leftSide = options.leftSide;
+	} 
 	
+	var numDesigns = Math.ceil(numAcross/design.width) +2; 
+	//console.log("Can fit " + numDesigns + " on X axis... " + numAcross + "/" + design.width);
+	 
 	// Translate to the beginning
 	while(design.greatestX > 0 && testCount < 100){
-		console.log("GREATESTX?! " + design.greatestX);
+		//console.log("GREATESTX?! " + design.greatestX);
 		design.translateTheseLines(-design.width, 0);
 		design.updateDimensions();
 		testCount ++;
@@ -297,11 +267,29 @@ var drawDesignOnGridAsEdge = function(design, options){
 	console.log("Move design " + testCount + " times");
 	//design.updateDimensions();
 	
+	var numDesignsOnLeft = Math.ceil((leftSide - design.smallestX)/design.width); 
+	console.log("Number of designs to the left: " + numDesignsOnLeft);
+	var xOffset = $("#spinnerFillX").spinner("value");
+	design.translateTheseLines(numDesignsOnLeft*-xOffset, 0);
 	// NOTE: Figure out how to not duplicate lines later
 	// Stamp them across the X axis
+	console.log("num designs?! " + numDesigns);
 	for(var i = 0; i < numDesigns; i++){
-		drawDesignOnGrid(design, options);
-		design.translateTheseLines(design.width, 0);
+		console.log("edge... " + design.smallestX + " ===? " + leftSide);
+		if(design.smallestX === leftSide){
+			console.log("Options.skipMiddleDesign? " + options);
+			if(options && options.skipMiddleDesign){
+				console.log("skipping over design draw at x " + leftSide);
+			} else {
+				console.log("drawing the full line in edge mode");
+				drawDesignOnGrid(design, options);
+			}
+			
+		} else {
+			drawDesignOnGrid(design, options);
+		}
+		design.translateTheseLines(design.width + xOffset, 0);
+		design.updateDimensions();
 	}
 	
 };
@@ -311,28 +299,46 @@ var drawDesignOnGridAsFill = function(design, options){
 	// Determine how many designs we can fit on here
 	design.updateDimensions();
 	var numDesigns = Math.ceil(numDown/design.height) +2;
-	console.log("Can fit " + numDesigns + " on Y axis... " + numDown + "/" + design.height);
+	var topSide = design.smallestY;
+	var leftSide = design.smallestX;
+	if(options) options.leftSide = leftSide;
+	//console.log("Can fit " + numDesigns + " on Y axis... " + numDown + "/" + design.height);
 	
 	//Translate to the top
 	while(design.greatestY > 0 && testCount < 100){
-		console.log("GREATESTY?! " + design.greatestY);
+		//console.log("GREATESTY?! " + design.greatestY);
 		design.translateTheseLines(0, -design.height);
 		design.updateDimensions();
 		testCount ++;
 	}
-	console.log("Move design " + testCount + " times");
+	//console.log("Move design " + testCount + " times");
 	
 	//design.translateTheseLines(0, -design.height * Math.floor(numDesigns/2));
 	
 	// Stamp them across the Y axis
 	console.log("num designs?! " + numDesigns);
 	for(var i = 0; i < numDesigns; i++){
-		console.log("drawing row " + i);
+		//console.log("drawing row " + i);
 		//console.log(design);
-		drawDesignOnGridAsEdge(design, options);
+		console.log(design.smallestY + " ===? " + topSide);
+		if(design.smallestY === topSide){
+			console.log("fill smallestY === topSide. Skip middle Design = true");
+			if(options){
+				console.log("adding skipMiddleDesign to options");
+				options.skipMiddleDesign = true;
+			} else {
+				options = {skipMiddleDesign: true};
+			}
+			drawDesignOnGridAsEdge(design, options);
+			options.skipMiddleDesign = false;
+		} else {
+			drawDesignOnGridAsEdge(design, options);
+		}
+		
 		//drawDesignOnGrid(design, options);
 		//console.log(design);
 		design.translateTheseLines(0, design.height);
+		design.updateDimensions();
 	}
 };
 

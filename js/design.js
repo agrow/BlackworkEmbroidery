@@ -362,9 +362,9 @@ var createDesign = function(){
 			if(design.width === 0) design.width = 1;
 			if(design.height === 0) design.height = 1;
 			
-			console.log("design dimentions: " + design.smallestX + ", " + design.smallestY + " /// " +
-											  + design.greatestX + ", " + design.greatestY + " /// " +
-												design.width + " by " + design.height);
+			//console.log("design dimentions: " + design.smallestX + ", " + design.smallestY + " /// " +
+			//								  + design.greatestX + ", " + design.greatestY + " /// " +
+			//									design.width + " by " + design.height);
 		},
 		changeRoot: function(x, y){
 			// moves all points in the design by x and y amounts to keep the root
