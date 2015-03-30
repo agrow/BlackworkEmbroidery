@@ -8,9 +8,14 @@
 		<link rel="stylesheet" type="text/css" href="css/ui-lightness/jquery-ui-1.10.4.css">
 		<script type="text/javascript" src="js/libs/jquery-1.11.1.js" ></script>
 		<script type="text/javascript" src="js/libs/jquery-ui-1.10.4.js" ></script>
+		<script type="text/javascript" src="js/libs/jdataview.js" ></script>
+		<script type="text/javascript" src="js/libs/FileSaver.js" ></script>
+		<script type="text/javascript" src="js/libs/pattern.js" ></script>
+		<script type="text/javascript" src="js/libs/dstformat.js" ></script>
 		<script src="http://d3js.org/d3.v3.min.js"></script>
 		<script type="text/javascript" src="js/design.js" ></script>
 		<script type="text/javascript" src="js/grammar.js" ></script>
+		<script type="text/javascript" src="js/generateDST.js" ></script>
 		<script type="text/javascript" src="js/grid.js" ></script>
 		<script type="text/javascript" src="js/main.js" ></script>
 	</head>
@@ -60,6 +65,17 @@
 				<svg id="svg_canvas">
 					
 				</svg>
+			</div>
+			
+			<div id="file_gen_div">
+				<div>
+					<button type="button" id="zoomHoopIn"> Zoom Hoop In </button>
+					<button type="button" id="zoomHoopOut"> Zoom Hoop Out </button>
+					
+					<button type="button" id="centerOnDesign"> Center On Design </button>
+					
+					
+				</div>
 			</div>
 		</div>
 
