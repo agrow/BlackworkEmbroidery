@@ -383,3 +383,32 @@ var removeObjectByID = function(id){
 	console.log(svgElements);
 	svgElements.remove();
 };
+
+//////////////////////////////////////////////////// Hoop Controls //////////////////////////
+
+
+var findCenterAndRedrawHoop = function(){
+	
+	
+}
+
+
+
+var redrawHoop = function(){
+	var svgElement = d3.selectAll("svg");
+	removeObjectsWithClassName("hoopBoundary");
+	
+	// The unitsPerStitch may change, resulting in a new hoop dimension to be calculated
+	// The centerX/centerY may change, resulting in a new set of hoop location calculations
+	generateHoopDimensions(gridSpacing);
+	
+	svgElement.append("rect")
+		.attr("x", hoop.x)
+		.attr("y", hoop.y)
+		.attr("width", hoop.width)
+		.attr("height", hoop.height)
+		.attr("stroke-width", 3)
+		.attr("stroke", "blue")
+		.attr("fill", "none")
+		.attr("class", "hoopBoundary");
+}

@@ -8,7 +8,7 @@ $( document ).ready(function() {
 	// Resize SVG
 	console.log($(document).width());
 	$("#svg_canvas").width($(document).width() - 100);
-	$("#svg_canvas").height($(document).height()-100);
+	$("#svg_canvas").height($(document).height()-200);
 	
 	drawGrid();
 	
@@ -75,6 +75,7 @@ $( document ).ready(function() {
 	//drawDensityColorMap(testDesign);
 	drawDesignOnGrid(testDesign);
 	redrawDesignBoundary(testDesign);
+	redrawHoop();
 	
 	//drawMST(testDesign);
 	
