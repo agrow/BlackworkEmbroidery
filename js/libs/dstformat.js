@@ -176,7 +176,7 @@
 		}
 		var blob = new Blob([byteArray], {type:"application/octet-stream"});
 		
-		console.log(URL.createObjectURL(blob));
+		//console.log(URL.createObjectURL(blob));
 		
 		saveAs(blob, fileName);
     }

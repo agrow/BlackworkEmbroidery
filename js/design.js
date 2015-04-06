@@ -509,7 +509,7 @@ var createDesign = function(){
 		},
 		
 		addAllLines : function(newLines){
-			//console.log("adding " + newLines.length + " new lines to the design");
+			console.log("adding " + newLines.length + " new lines to the design");
 			for(var i = 0; i < newLines.length; i++){
 				design.addLine(newLines[i].point1.position.x, newLines[i].point1.position.y, 
 							   newLines[i].point2.position.x, newLines[i].point2.position.y);
@@ -518,9 +518,9 @@ var createDesign = function(){
 		removeLine : function(name) {
 			for(var i = 0; i < design.lines.length; i ++){
 				if(design.lines[i].id === name){
-					console.log("DESIGN " + design.id + " owns the line " + name);
+					//console.log("DESIGN " + design.id + " owns the line " + name);
 					var line = design.lines[i];
-					console.log(line);
+					//console.log(line);
 					// For start and end points:
 					// Does this point connect to any other points?
 					var idToDelete = -1;
@@ -534,10 +534,10 @@ var createDesign = function(){
 						}
 					}
 					if(found){
-						console.log("p1 phase 1 deleting ID: "  + idToDelete);
-						console.log(line.point1.lines + " with length " + line.point1.lines.length);
+						//console.log("p1 phase 1 deleting ID: "  + idToDelete);
+						//console.log(line.point1.lines + " with length " + line.point1.lines.length);
 						line.point1.lines.splice(idToDelete, 1);
-						console.log(line.point1.lines + " with length " + line.point1.lines.length);
+						//console.log(line.point1.lines + " with length " + line.point1.lines.length);
 					}
 					// POINT 1: POINTS ///////////////////////////////////////////////////////////
 
@@ -549,10 +549,10 @@ var createDesign = function(){
 						} 
 					}
 					if(found){
-						console.log("p1 phase 2 deleting ID: "  + idToDelete);
-						console.log(line.point1.points + " with length " + line.point1.points.length);
+						//console.log("p1 phase 2 deleting ID: "  + idToDelete);
+						//console.log(line.point1.points + " with length " + line.point1.points.length);
 						line.point1.points.splice(idToDelete, 1);
-						console.log(line.point1.points + " with length " + line.point1.points.length);
+						//console.log(line.point1.points + " with length " + line.point1.points.length);
 					}
 
 					// POINT 1: ADJLINES ///////////////////////////////////////////////////////////
@@ -564,10 +564,10 @@ var createDesign = function(){
 						}
 					}
 					if(found){
-						console.log("p1 phase 3 deleting ID: "  + idToDelete);
-						console.log("adjLines " + line.point1.adjLines);
+						//console.log("p1 phase 3 deleting ID: "  + idToDelete);
+						//console.log("adjLines " + line.point1.adjLines);
 						line.point1.adjLines[idToDelete] = null;
-						console.log("adjLines " + line.point1.adjLines);
+						//console.log("adjLines " + line.point1.adjLines);
 					}
 					// POINT 1: ADJPOINTS ///////////////////////////////////////////////////////////
 					found = false;
@@ -578,10 +578,10 @@ var createDesign = function(){
 						}
 					}
 					if(found){
-						console.log("p1 phase 4 deleting ID: "  + idToDelete);
-						console.log("adjPoints " + line.point1.adjPoints);
+						//console.log("p1 phase 4 deleting ID: "  + idToDelete);
+						//console.log("adjPoints " + line.point1.adjPoints);
 						line.point1.adjPoints[idToDelete] = null;
-						console.log("adjPoints " + line.point1.adjPoints);
+						//console.log("adjPoints " + line.point1.adjPoints);
 					}
 					
 					// Do the same for point 2's /////////////////////////////////////////////////
@@ -594,10 +594,10 @@ var createDesign = function(){
 						}
 					}
 					if(found){
-						console.log("p2 phase 1 deleting ID: "  + idToDelete);
-						console.log(line.point2.lines + " with length " + line.point2.lines.length);
+						//console.log("p2 phase 1 deleting ID: "  + idToDelete);
+						//console.log(line.point2.lines + " with length " + line.point2.lines.length);
 						line.point2.lines.splice(idToDelete, 1);
-						console.log(line.point2.lines + " with length " + line.point2.lines.length);
+						//console.log(line.point2.lines + " with length " + line.point2.lines.length);
 					}
 					// POINT 1: POINTS ///////////////////////////////////////////////////////////
 
@@ -609,10 +609,10 @@ var createDesign = function(){
 						} 
 					}
 					if(found){
-						console.log("p2 phase 2 deleting ID: "  + idToDelete);
-						console.log(line.point2.points + " with length " + line.point2.points.length);
+						//console.log("p2 phase 2 deleting ID: "  + idToDelete);
+						//console.log(line.point2.points + " with length " + line.point2.points.length);
 						line.point2.points.splice(idToDelete, 1);
-						console.log(line.point2.points + " with length " + line.point2.points.length);
+						//console.log(line.point2.points + " with length " + line.point2.points.length);
 					}
 
 					// POINT 1: ADJLINES ///////////////////////////////////////////////////////////
@@ -624,10 +624,10 @@ var createDesign = function(){
 						}
 					}
 					if(found){
-						console.log("p2 phase 3 deleting ID: "  + idToDelete);
-						console.log("adjLines " + line.point2.adjLines);
+						//console.log("p2 phase 3 deleting ID: "  + idToDelete);
+						//console.log("adjLines " + line.point2.adjLines);
 						line.point2.adjLines[idToDelete] = null;
-						console.log("adjLines " + line.point2.adjLines);
+						//console.log("adjLines " + line.point2.adjLines);
 					}
 					// POINT 1: ADJPOINTS ///////////////////////////////////////////////////////////
 					found = false;
@@ -638,10 +638,10 @@ var createDesign = function(){
 						}
 					}
 					if(found){
-						console.log("p2 phase 4 deleting ID: "  + idToDelete);
-						console.log("adjPoints " + line.point2.adjPoints);
+						//console.log("p2 phase 4 deleting ID: "  + idToDelete);
+						//console.log("adjPoints " + line.point2.adjPoints);
 						line.point2.adjPoints[idToDelete] = null;
-						console.log("adjPoints " + line.point2.adjPoints);
+						//console.log("adjPoints " + line.point2.adjPoints);
 					}
 					
 					design.removePoint(design.lines[i].point1.id);
@@ -649,7 +649,7 @@ var createDesign = function(){
 					
 					// Remove line
 					design.lines.splice(i, 1);
-					console.log("REMOVAL PROCESS COMPLETE");
+					//console.log("REMOVAL PROCESS COMPLETE");
 					console.log(design);
 					return true;
 				}
@@ -867,7 +867,95 @@ var createDesign = function(){
 			
 			design.currentMST = edges;
 			return edges;
-		}
+		},
+		
+		// http://en.wikipedia.org/wiki/Depth-first_search
+		findDFSPoints: function(){
+			// Can do something smarter about picking a first point...
+			// For now, just pick the first edge. We are looking for a list of point locations 
+			var stack = [];
+			var processed = [];
+			if(design.points.length < 1){
+				console.log("Can't DFS on empty design of 0 points...");
+				return null;
+			}
+			console.log("POINTS: ", design.points);
+			
+			// Find the first component
+			design.points[0].DFSParent = null;
+			processed = processed.concat(design.findConnectedDFSPoints(design.points[0]));
+			
+			// Check for unconnected components to make sure we have the whole design
+			for(var i = 0; i < design.points.length; i++){
+				if(design.points[i].DFSParent === undefined){
+					processed.push("jump");
+					console.log("Found disconnected point " + design.points[i].id);
+					processed = processed.concat(design.findConnectedDFSPoints(design.points[i]));
+				}
+			}
+			
+			// By now, processed should contain all the pattern info we need on the order of points to stitch
+			return processed;
+		},
+		
+		findConnectedDFSPoints: function(seedPt){
+			console.log("calling findConnectedDFSPoints on point " + seedPt.id);
+			
+			var stack = [];
+			var processed = [];
+			
+			seedPt.DFSParent = null;
+			stack.push(seedPt);
+			
+			while(stack.length > 0){
+				var vertex = stack.pop();
+				//console.log("examining DFS for point " + vertex.id);
+
+				if(vertex && vertex.discovered !== true){
+					vertex.discovered = true;
+					processed.push(vertex);
+					var added = 0;
+					
+					for(var i = 0; i < vertex.adjPoints.length; i++){
+						// adjPoints will always be 8 long. Check for not null in order to add them...
+						if( vertex.adjPoints[i] !== null && 
+							vertex.adjPoints[i].id !== vertex.DFSParent) {
+								
+								// Also skip the root node
+								// Also skip discovered nodes because it's just a waste
+								if(vertex.adjPoints[i].DFSParent === null ||
+									vertex.adjPoints[i].discovered === true){
+									// Found an already-claimed node (or the root), loop it
+									processed.push("loop:"+ vertex.id + "->"+ vertex.adjPoints[i].id);
+								} else {
+									//console.log("adjVertex(" + vertex.adjPoints[i].id + ") setting parent " + vertex.id);
+									vertex.adjPoints[i].DFSParent = vertex.id;
+									stack.push(vertex.adjPoints[i]);
+									added++;
+								}
+						}
+					}
+
+					// Pop if we are at the end of the line
+					if(added === 0) processed.push("pop.noConnections:" + vertex.id);
+				} else if(vertex && vertex.discovered !== undefined && vertex.discovered === true) {
+					// Pop if we've reached a loop
+					processed.push("pop.alreadyVisitedVertex:" + vertex.id);
+				}
+			}
+			console.log("returning processed", processed);
+			
+			return processed;
+		},
+		
+		resetDFSVariables: function(){
+			// Reset all the points' settings for next time
+			
+			for(var i = 0; i < design.points.length; i++){
+				design.points[i].discovered = undefined;
+				design.points[i].DFSParent = undefined;
+			}
+		},
 	};
 	
 	designCount++;

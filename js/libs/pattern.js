@@ -152,6 +152,19 @@
 		this.bottom -= this.top;
 		this.top = 0;
 	};
+	
+	Pattern.prototype.scale = function(val) {
+		// No scaling down to zero!
+		if (val !== 0){
+			for (var i = 0; i < this.stitches.length; i++){
+				// Make sure there are no decimals... those don't print well...
+				this.stitches[i].x = Math.floor(this.stitches[i].x * val);
+				this.stitches[i].y = Math.floor(this.stitches[i].y * val);
+			}
+			
+			this.calculateBoundingBox();
+		}
+	};
 
 	Pattern.prototype.invertPatternVertical = function () {
 		var i = 0,

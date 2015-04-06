@@ -24,6 +24,10 @@ var hoop = {
 	fileUnitsHeight: 1000,
 };
 
+var printDesign;
+
+var stPattern;
+
 var findMaxNumHoopStitches = function(){
 	hoop.maxNumStitchHeight = hoop.fileUnitsHeight/hoop.unitsPerStitch;
 	hoop.maxNumStitchWidth = hoop.fileUnitsWidth/hoop.unitsPerStitch;
@@ -47,20 +51,199 @@ var generatePrintPattern = function(design, gridSpacing){
 	console.log("design starting out with # lines: " + design.lines.length);
 	for(var i = 0; i < design.lines.length; i++){
 		var line = design.lines[i];
+		
 		if( line.point1.position.x * gridSpacing < hoop.x || line.point1.position.x * gridSpacing > hoop.x + hoop.width || 
 			line.point2.position.x * gridSpacing < hoop.x || line.point2.position.x * gridSpacing > hoop.x + hoop.width || 
 			line.point1.position.y * gridSpacing < hoop.y || line.point1.position.x * gridSpacing > hoop.y + hoop.height || 
 			line.point2.position.y * gridSpacing < hoop.y || line.point2.position.x * gridSpacing > hoop.y + hoop.height){
-				console.log("trying to remove line " + line.name);
-				design.removeLine(line.name); 
+				console.log("trying to remove line " + line.id);
+				design.removeLine(line.id); 
 		}
 	}
 	
 	console.log("design AFTER TRIM # lines: " + design.lines.length);
+	//console.log(design.lines);
+	
+	// ALRIGHT. Now to turn it into a pattern...
+	// We have a bunch of widely offset stitches with unscaled units...
+	// Translate them so that the zero is in the center of the design, instead of the upper left canvas corner
+	design.updateDimensions();
+	console.log("design dimensions", design.smallestX, design.smallestY, design.width, design.height);
+
+	var centerX = design.smallestX + (design.width/2);
+	var centerY = design.smallestY + (design.height/2);
+	design.translateTheseLines(-centerX, -centerY);
+	design.updateDimensions();
+	
+	console.log("new design dimensions", design.smallestX, design.smallestY, design.width, design.height);
+	
+	// We need to do a DFS of the pattern (looking for shallow depths first, if that is possible...?)
+	var processedPoints = design.findDFSPoints();
+	console.log("processedPoints", processedPoints);
+	// Add the stitches sequentially to the pattern with new units
+	stPattern = new Pattern();
+	var openPoints = [];
+	var pop = false;
+	var flags = stitchTypes.normal;
+	
+	for(var i = 0; i < processedPoints.length; i++){
+		var item = processedPoints[i];
+		if(item.id){
+			// This is a vertex. add it after doing possible past computation
+			if(pop === true){
+				// This vertex could be connected to any previous openPoints. 
+				// We need to find which one and backtrack to it
+				// Then cut all the popped points out of openPoints
+				var results = findPathToSharedParent(item, openPoints);
+				// Backtrack
+				flags = stitchTypes.normal;
+				console.log("stitching pop path of length " + results.path.length);
+				for(var j = 0; j < results.path.length; j++){	
+					stPattern.addStitchAbs(results.path[j].position.x, results.path[j].position.y, flags, true);
+					console.log("      pop.making stitch... " + results.path[j].position.x + ", " + results.path[j].position.y);
+				}
+				// Pop the COMPLETELY FINISHED (yay) openPoints
+				//console.log("old openPoints had # " + openPoints.length);
+				openPoints = openPoints.slice(0, -results.numToPop);
+				//console.log("new openPoints has # " + openPoints.length);
+			}
+			// Previous data may have set the flags to jump/trim
+			if(flags === stitchTypes.trim) {
+				console.log("   ..trimming");
+				stPattern.addStitchRel(0, 0, flags, true);
+			}
+			
+			flags = stitchTypes.normal;
+			stPattern.addStitchAbs(item.position.x, item.position.y, flags, true);
+			console.log("      making stitch... " + item.position.x + ", " + item.position.y);
+			openPoints.push(item);
+			flags = 0;
+		} else {
+			// This is a string telling us some valuable info!
+			// Either: loop:#->#, pop.noConnections:#, pop.alreadyVisitedVertex:#, or jump
+			var tokens = item.split(":");
+			if(tokens[0] === "jump"){
+				// Do I want to trim? Or Jump? I dunno, let's try trim for now.
+				flags = stitchTypes.trim;
+				
+				// Clear out pending pops and open points, we're not going to need them anymore
+				// now that we're onto a new section of the design
+				// (jumps should always come after pops, because we finish stitching a connected graph)
+				// So this overrides the backtracking flags
+				openPoints = [];
+				pop = false;
+			} else if (tokens[0] === "loop") {
+				var loopSts = tokens[1].split("->");
+				var tar, ret;
+				// Find the stitches... although the return stitch should be the last one in the openPoints,
+				// The target could be anywhere
+				for(var j = 0; j < openPoints.length; j++){
+					if(openPoints[j].id === loopSts[0]) ret = openPoints[j];
+					if(openPoints[j].id === loopSts[1]) tar = openPoints[j];
+				}
+				console.log("processing loop:" + tokens[1]);
+				// Make a normal stitch to the loop target, then back to its origin
+				flags = 0; 
+				flags |= stitchTypes.normal;
+				stPattern.addStitchAbs(tar.position.x, tar.position.y, flags, true);
+				console.log("      tar.making stitch... " + tar.position.x + ", " + tar.position.y);
+				
+				// DO A LOOK-AHEAD
+				// If there is a jump before another stitch, or no other stitch, do not backtrack
+				var seenStitch = false;
+				var seenJump = false;
+				for(var j = i+1; j < processedPoints.length; j++){
+					if(!seenStitch && !seenJump){
+						// If we see a stitch, we're not done. No need to check anything else
+						if(processedPoints[j].id){
+							console.log("we have seen another stitch after the loop");
+							seenStitch = true;
+						// If we see a jump, we're done with this section. No need to backtrack.
+						} else if(processedPoints[j].indexOf("jump") > 0) {
+							console.log("we have seen a jump after the loop");
+							seenJump = true;
+						}
+					}
+				}
+				// If we have not seen a jump and seen another stitch, we may backtrack our stitch in preparation
+				if(!seenJump && seenStitch){
+					console.log("NO jump and SEEN STITCH, so we will backtrack our loop");
+					stPattern.addStitchAbs(ret.position.x, ret.position.y, flags, true);
+					console.log("      ret.making stitch... " + ret.position.x + ", " + ret.position.y);
+				} else {
+					console.log("We have seen a jump or no further stitches. No return will be attempted");
+				}
+				
+				
+			} else if (tokens[0] === "pop.noConnections" || tokens[0] === "pop.alreadyVisitedVertex"){
+				pop = true;
+				// The next stitch will figure out how to go backwards IF it's necessary
+			} else {
+				console.log("ERROR: something wrong in the design? " + tokens[0]);
+			}
+		}
+	}
+	
+	stPattern.addStitchRel(0, 0, stitchTypes.end, true);
+	
+	console.log("pattern stitches!", stPattern.stitches);
+	
+	// Scale up
+	stPattern.scale(hoop.unitsPerStitch);
+	
+	// May need to flip them vertically?
+	
+	
+	// And print!
+	var rando = Math.floor(Math.random() * 10000);
+	console.log(rando);
+	dstWrite("blackworkTest" + rando + ".dst", stPattern);
 	
 
 };
 
+var findPathToSharedParent = function(nextPt, openPoints){
+	// nextPt is the point we're looking for that has a shared parent
+	// openPoints are the points we've previously stitched.
+	// the LAST point in openPoints is where we are. (currPt)
+	// We need to return a path from that last point to the point where nextPt
+	// has a shared parent
+	
+	var results = {
+		path: [],
+		numToPop: 0
+	}
+	
+	var currPt = openPoints[openPoints.length-1];
+	
+	for(var i = openPoints.length -2; i >= 0; i--){
+		if(openPoints[i].id === currPt.DFSParent){
+			// We have found one step up the ladder! Yay!
+			results.path.push(openPoints[i]);
+			results.numToPop++;
+			// Pop up to that point
+			currPt = openPoints[i];
+			// Have we found the end? If so, stop!
+			if(currPt.id === nextPt.DFSParent) {
+				console.log("found shared parent, backtracking complete", results);
+				return results;
+			}
+			// If not, keep popping until you find it
+		} else {
+			console.log("uh... found a point not on the path? I guess pop it and keep looking? " + openPoints[i].id + " at i " + i);
+			results.numToPop++;
+		}
+	}
+		
+	console.log(" WE SHOULD HAVE RETURNED BY NOW! SOMETHING IS WRONG!!! ", results);
+	return results
+};
+/*
+var findIndexOfParent = function(pt, openPoints){
+	for(var i = 0; i < openPoints.length; i++){
+		if(openPoints[i].id === pt.DFSParent) return i;
+	}
+};*/
 
 
 

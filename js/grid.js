@@ -234,6 +234,10 @@ var drawMST = function(design){
 };
 
 var drawDesignOnGrid = function(design, options){
+	if(options && options.print === "new"){
+		console.log("resetting print design in drawDesignOnGrid");
+		printDesign = createDesign();
+	}
 	//console.log("Drawing design...");
 	var svgElement = d3.selectAll("svg");
 	for(var i = 0; i < design.lines.length; i++){
@@ -241,10 +245,23 @@ var drawDesignOnGrid = function(design, options){
 		//							   + (design.lines[i].point2.position.x * gridSpacing) + ", " + design.lines[i].point2.position.y * gridSpacing);
 		drawDesignLine(svgElement, design.lines[i], options);
 	}
+	
+	//console.log("options", options);
+	if(options && options.print && options.print !== "ignore") {
+		console.log("AddingAllLines to printDesign from drawDesignOnGrid");
+		printDesign.addAllLines(design.lines);
+	}
 	//console.log("Design drawn " + design.lines.length + " lines.");
 };
 
 var drawDesignOnGridAsEdge = function(design, options){
+	if(options && options.print === "new"){
+		printDesign = createDesign();
+		console.log("resetting print design in drawDesignOnGridAsEdge");
+		// Change so that drawDesignOnGrid does not reset/duplicate the printDesign
+		options.print = "print";
+	}
+	
 	var testCount = 0;
 	// Determine how many designs we can fit on here
 	design.updateDimensions();
@@ -280,6 +297,12 @@ var drawDesignOnGridAsEdge = function(design, options){
 			console.log("Options.skipMiddleDesign? " + options);
 			if(options && options.skipMiddleDesign){
 				console.log("skipping over design draw at x " + leftSide);
+				
+				// Make sure they are part of the print, though!
+				if(options && options.print && options.print !== "ignore") {
+					console.log("AddingAllLines to printDesign from drawDesignOnGridAsEdge");
+					printDesign.addAllLines(design.lines);
+				}
 			} else {
 				console.log("drawing the full line in edge mode");
 				drawDesignOnGrid(design, options);

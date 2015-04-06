@@ -172,7 +172,10 @@ $( document ).ready(function() {
 		// Remove any previous designManip things
 		removeObjectsWithClassName("designManip");
 		designManip = randomPostProduction(testDesign);
-		drawDesignOnGrid(designManip, {class: "designManip"});
+		drawDesignOnGrid(designManip, {class: "designManip", print: "new"});
+		// randPost only draws the manip, not the original design, which is drawn line-by-line...
+		// Just add all the original design's lines after making a fresh start with the manip
+		printDesign.addAllLines(testDesign.lines);
 		findCenterAndRedrawHoop();
 	});
 	
@@ -194,7 +197,7 @@ $( document ).ready(function() {
 		}
 		
 		destructive.addAllLines(testDesign.lines);
-		drawDesignOnGridAsEdge(destructive, {class: "designManip", skipMiddleDesign: true});
+		drawDesignOnGridAsEdge(destructive, {class: "designManip", skipMiddleDesign: true, print: "new"});
 		findCenterAndRedrawHoop();
 	});
 	
@@ -210,7 +213,7 @@ $( document ).ready(function() {
 		}
 		
 		destructive.addAllLines(testDesign.lines);
-		drawDesignOnGridAsFill(destructive, {class: "designManip"});
+		drawDesignOnGridAsFill(destructive, {class: "designManip", print: "new"});
 		findCenterAndRedrawHoop();
 	});
 	
@@ -226,12 +229,11 @@ $( document ).ready(function() {
 	
 	
 	$("#generatePrint").click(function(){
-		var superDesign = createDesign();
-		superDesign.addAllLines(testDesign.lines);
-		superDesign.addAllLines(designManip.lines);
-		superDesign.addAllLines(destructive.lines);
-		
-		generatePrintPattern(superDesign, gridSpacing);
+		if(printDesign === undefined){
+			console.log("do a Post-Production or edge thing before printing... for now.")
+		} else {
+			generatePrintPattern(printDesign, gridSpacing);
+		}
 	});
 });
 
