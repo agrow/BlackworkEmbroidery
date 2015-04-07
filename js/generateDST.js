@@ -106,6 +106,7 @@ var generatePrintPattern = function(design, gridSpacing){
 				//console.log("old openPoints had # " + openPoints.length);
 				openPoints = openPoints.slice(0, -results.numToPop);
 				//console.log("new openPoints has # " + openPoints.length);
+				pop = false;
 			}
 			// Previous data may have set the flags to jump/trim
 			if(flags === stitchTypes.trim) {
