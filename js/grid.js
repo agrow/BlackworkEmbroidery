@@ -407,8 +407,40 @@ var removeObjectByID = function(id){
 	svgElements.remove();
 };
 
-//////////////////////////////////////////////////// Hoop Controls //////////////////////////
+//////////////////////////////////////////////////// Hoop Stuff //////////////////////////
 
+// Note: you should call findCenterAndRedrawHoop / redrawHoop before calling this
+// To make sure the hoop has the right size
+var gatherPrintableStitches = function(){
+	var svgElements = d3.selectAll(".stitchLine");
+	var lines = svgElements[0];
+	
+	printDesign = createDesign();
+	
+	for(var i = 0; i < lines.length; i++){
+		var x1 = parseFloat(lines[i].getAttribute("x1"));
+		var x2 = parseFloat(lines[i].getAttribute("x2"));
+		var y1 = parseFloat(lines[i].getAttribute("y1"));
+		var y2 = parseFloat(lines[i].getAttribute("y2"));
+		
+		if(x1 < hoop.x || x1 > hoop.x + hoop.width ||
+		   x2 < hoop.x || x2 > hoop.x + hoop.width ||
+		   y1 < hoop.y || y1 > hoop.y + hoop.height ||
+		   y2 < hoop.y || y2 > hoop.y + hoop.height){
+		   	
+		   	console.log("POINT OF LINE OUT OF BOUNDS, skip!")
+		} else {
+		   	// Undo how the line was drawn and add it to the design
+		   	//.attr("x1", line.point1.position.x * gridSpacing)
+			//.attr("y1", line.point1.position.y * gridSpacing)
+			//.attr("x2", line.point2.position.x * gridSpacing)
+			//.attr("y2", line.point2.position.y * gridSpacing)
+			printDesign.addLine(x1/gridSpacing, y1/gridSpacing, x2/gridSpacing, y2/gridSpacing);
+		}
+		
+	}
+	
+};
 
 var findCenterAndRedrawHoop = function(){
 	var svgElements = d3.selectAll(".stitchLine");
@@ -464,4 +496,29 @@ var redrawHoop = function(){
 		.attr("stroke", "blue")
 		.attr("fill", "none")
 		.attr("class", "hoopBoundary");
+};
+
+var drawStPattern = function(){
+	var svgElement = d3.selectAll("svg");
+	var lineFunction = d3.svg.line()
+							.x(function(d) { return d.x; })
+							.y(function(d) { return d.y; })
+							.interpolate("linear");
+	
+	removeObjectsWithClassName("stPattern");
+	
+	var lineData = [];
+	for(var i = 0; i < stPattern.stitches.length; i++){
+		lineData.push({"x": stPattern.stitches[i].x, "y": stPattern.stitches[i].y});
+	}
+	
+	console.log("printing linData", lineData);
+	
+	svgElement.append("path")
+		.attr("d", lineFunction(lineData))
+		.attr("stroke", "green")
+		.attr("stroke-width", 2)
+		.attr("fill", "none")
+		.attr("class", "stPattern");
+	
 };

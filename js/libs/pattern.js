@@ -25,6 +25,7 @@
 	function Pattern() {
 		this.colors = [];
 		this.stitches = [];
+		this.oldAbsStitches = [];
         this.hoop = {};
 		this.lastX = 0;
 		this.lastY = 0;
@@ -57,23 +58,45 @@
 		if (((flags & stitchTypes.stop) === stitchTypes.stop) && isAutoColorIndex) {
 			this.currentColorIndex += 1;
 		}
+		/*
+		if(this.stitches.length === 0){ //&& x !== 0 && y !== 0){
+			console.log("--- pattern.js: Adding jumps to first stitch");
+			this.prepPatternWithFirstStitch(x, y);
+		}*/
+		
+		if(x === 0 && y === 0) console.log("!!!! I am making an abs stitch at 0, 0...?");
 		this.stitches[this.stitches.length] = new Stitch(x, y, flags, this.currentColorIndex);
 	};
 
 	Pattern.prototype.addStitchRel = function (dx, dy, flags, isAutoColorIndex) {
 		if (this.stitches.length !== 0) {
+			this.lastX = this.stitches[this.stitches.length-1].x;
+			this.lastY = this.stitches[this.stitches.length-1].y;
 			var nx = this.lastX + dx,
 				ny = this.lastY + dy;
 			this.lastX = nx;
 			this.lastY = ny;
+			if(nx === 0 && ny === 0) console.log("relative stitch at nx, ny === 0. This is okay.");
 			this.addStitchAbs(nx, ny, flags, isAutoColorIndex);
 		} else {
 			this.addStitchAbs(dx, dy, flags, isAutoColorIndex);
+			if(dx === 0 && dy === 0) console.log("!!!! relative stitch at dx, dy === 0. This is probably NOT okay.");
 		}
 	};
 	
+	Pattern.prototype.prepPatternWithFirstStitch = function(x, y){
+		this.stitches[this.stitches.length] = new Stitch(0, 0, stitchTypes.trim, this.currentColorIndex);
+		this.stitches[this.stitches.length] = new Stitch(x, y, stitchTypes.trim, this.currentColorIndex);
+	};
+	
 	Pattern.prototype.transformToRelStitches = function(){
-		console.log("transformToRelStitches OldStitches " + this.stringifyStitches());
+		//console.log("transformToRelStitches OldStitches " + this.stringifyStitches());
+		this.oldAbsStitches = [];
+		for(var i = 0; i < this.stitches.length; i++){
+			var st = this.stitches[i];
+			this.oldAbsStitches.push(new Stitch(st.x, st.y, st.flags, st.color));
+		}
+		
 		if(this.stitches.length > 1){ // Safety first
 			for(var i = this.stitches.length-1; i >= 1; i--){ // I hope this doesn't mess up the first stitch =X
 				// compare this stitch's location to the previous'
@@ -83,7 +106,7 @@
 				currentStitch.y = currentStitch.y - lastStitched.y;
 			}
 		}
-		console.log("transformToRelStitches New!!!!! " + this.stringifyStitches());
+		//console.log("transformToRelStitches New!!!!! " + this.stringifyStitches());
 	};
 
 	Pattern.prototype.calculateBoundingBox = function () {
@@ -153,6 +176,19 @@
 		this.top = 0;
 	};
 	
+	// BEWARE USING THIS this.left/right will be wrong probably
+	Pattern.prototype.translate = function(x, y){
+		for (var i = 0; i < this.stitches.length; i += 1) {
+			this.stitches[i].x += x;
+			this.stitches[i].y += y;
+		}
+		this.right += x;
+		this.left += x;
+		this.top += y;
+		this.bottom += y;
+	};
+	
+	// BEWARE USING THIS distance between stitches gets big
 	Pattern.prototype.scale = function(val) {
 		// No scaling down to zero!
 		if (val !== 0){

@@ -12,7 +12,7 @@ $( document ).ready(function() {
 	// Resize SVG
 	console.log($(document).width());
 	$("#svg_canvas").width($(document).width() - 100);
-	$("#svg_canvas").height($(document).height()-200);
+	$("#svg_canvas").height($(document).height()-250);
 	
 	drawGrid();
 	
@@ -206,7 +206,7 @@ $( document ).ready(function() {
 		removeObjectsWithClassName("designManip");
 		
 		
-		//var destructive = createDesign();
+		var destructive = createDesign();
 		if(designManip !== null) {
 			drawDesignOnGrid(designManip, {class: "designManip"});
 			destructive.addAllLines(designManip.lines);
@@ -232,7 +232,10 @@ $( document ).ready(function() {
 		if(printDesign === undefined){
 			console.log("do a Post-Production or edge thing before printing... for now.")
 		} else {
+			// Should be done after hoop is repositioned, which I think happens automatically now.
+			gatherPrintableStitches();
 			generatePrintPattern(printDesign, gridSpacing);
+			drawStPattern();
 		}
 	});
 });

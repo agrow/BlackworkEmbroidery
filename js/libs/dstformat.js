@@ -104,10 +104,11 @@
             console.log("Stitch... " + x + ", " + y + " -- flags: " + flags);
             //if(thisJump) console.log("there was a jump! ", flags);
         }
-        console.log("1  " + pattern.stitches[0].x + ", " + pattern.stitches[0].y );
+        //console.log("1  " + pattern.stitches[0].x + ", " + pattern.stitches[0].y );
         pattern.addStitchRel(0, 0, global.stitchTypes.end, true);
         pattern.invertPatternVertical();
-        console.log("2  " + pattern.stitches[0].x + ", " + pattern.stitches[0].y );
+        //console.log("2  " + pattern.stitches[0].x + ", " + pattern.stitches[0].y );
+        console.log("stitches", pattern.stitches);
     }
     
      /*
@@ -234,7 +235,7 @@
     	
     	var compiledBytes = addLeadingZeroForHex(b0.toString(16)) + addLeadingZeroForHex(b1.toString(16)) + addLeadingZeroForHex(b2.toString(16));
     	
-    	console.log("generating bytes: " + compiledBytes);
+    	//console.log("generating bytes: " + compiledBytes);
     	
     	return compiledBytes;
     	
