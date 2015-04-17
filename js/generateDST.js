@@ -17,7 +17,7 @@ var hoop = {
 	centerY:0,
 	
 	//// Hoop and starter scale
-	unitsPerStitch:20, // 20 units / stitch
+	unitsPerStitch:30, // 20 units / stitch
 	maxNumStitchWidth:0, // Will be calculated to 50
 	maxNumStitchHeight:0, // Will be calculated to 50
 	fileUnitsWidth: 1000,
@@ -208,11 +208,11 @@ var generatePrintPattern = function(design, gridSpacing){
 	
 	
 	// And print!
-	var rando = Math.floor(Math.random() * 10000);
+	var rando = Math.floor(Math.random() * 100000);
 	console.log(rando);
-	dstWrite("blackworkTest" + rando + ".dst", stPattern);
+	dstWrite("bw" + rando + ".dst", stPattern);
 	
-	//console.log("Saved file to blackworkTest" + rando + ".dst");
+	console.log("Saved file to bw" + rando + ".dst");
 	
 	// LET THE MANGLING COMENCE
 	// transform the pattern back
@@ -223,7 +223,9 @@ var generatePrintPattern = function(design, gridSpacing){
 	console.log("reviving old stitches" + stPattern.stringifyStitches());
 	stPattern.invertPatternVertical();
 	console.log("inverting" + stPattern.stringifyStitches());
-	stPattern.translate(hoop.centerX, hoop.centerY);
+	
+	//stPattern.translate(hoop.centerX, hoop.centerY);
+	console.log("translating? " + hoop.centerX + ", " + hoop.centerY);
 	console.log(stPattern.stitches);
 	
 };
@@ -238,7 +240,7 @@ var findPathToSharedParent = function(nextPt, openPoints){
 	var results = {
 		path: [],
 		numToPop: 0
-	}
+	};
 	
 	var currPt = openPoints[openPoints.length-1];
 	
@@ -262,7 +264,7 @@ var findPathToSharedParent = function(nextPt, openPoints){
 	}
 		
 	console.log(" WE SHOULD HAVE RETURNED BY NOW! SOMETHING IS WRONG!!! ", results);
-	return results
+	return results;
 };
 
 // Note: 121 is the magic limit on the range of DST stitches
@@ -270,6 +272,8 @@ var findPathToSharedParent = function(nextPt, openPoints){
 var fillInStitchGapsAndAddStitchAbs = function(scale, x, y, flags, color){
 	var tempX = x;//*scale;
 	var tempY = y;//*scale;
+	
+	console.log("____ calling fillInStitchGraphAndAddStitchAbs: " + scale + ", " + x + ", " + y + ", " + flags + ", " + color);
 	
 	if(stPattern.stitches.length === 0){
 		stPattern.addStitchAbs(0, 0, stitchTypes.jump, color);
@@ -280,9 +284,11 @@ var fillInStitchGapsAndAddStitchAbs = function(scale, x, y, flags, color){
 	var newX = 0;
 	var newY = 0;
 	
-	var xDiff = x - lastStitch.x;
-	var yDiff = y - lastStitch.y;
+	var xDiff = (x - lastStitch.x)*scale;
+	var yDiff = (y - lastStitch.y)*scale;
 	var count = 0; // Just in case!
+	
+	console.log("__Diffs: " + xDiff + ", " + yDiff);
 	
 	while((xDiff > 121 || xDiff < -121 || yDiff > 121 || yDiff < -121) && count < 1000){
 		
@@ -303,13 +309,13 @@ var fillInStitchGapsAndAddStitchAbs = function(scale, x, y, flags, color){
 		}
 		
 		console.log("adding intermediate relative stitch +/-: " + newX + ", " + newY);
-		stPattern.addStitchRel(newX, newY, stitchTypes.jump, color); 
+		stPattern.addStitchRel(newX/scale, newY/scale, stitchTypes.jump, color); 
 		
 		count++;
 	}
 	if(count > 0) console.log("last stitch is " + xDiff + ", " + yDiff + " away from the last stitch");
 
 	stPattern.addStitchAbs(tempX, tempY, flags, color);
-}
+};
 
 

@@ -234,10 +234,6 @@ var drawMST = function(design){
 };
 
 var drawDesignOnGrid = function(design, options){
-	if(options && options.print === "new"){
-		console.log("resetting print design in drawDesignOnGrid");
-		printDesign = createDesign();
-	}
 	//console.log("Drawing design...");
 	var svgElement = d3.selectAll("svg");
 	for(var i = 0; i < design.lines.length; i++){
@@ -246,21 +242,10 @@ var drawDesignOnGrid = function(design, options){
 		drawDesignLine(svgElement, design.lines[i], options);
 	}
 	
-	//console.log("options", options);
-	if(options && options.print && options.print !== "ignore") {
-		console.log("AddingAllLines to printDesign from drawDesignOnGrid");
-		printDesign.addAllLines(design.lines);
-	}
 	//console.log("Design drawn " + design.lines.length + " lines.");
 };
 
 var drawDesignOnGridAsEdge = function(design, options){
-	if(options && options.print === "new"){
-		printDesign = createDesign();
-		console.log("resetting print design in drawDesignOnGridAsEdge");
-		// Change so that drawDesignOnGrid does not reset/duplicate the printDesign
-		options.print = "print";
-	}
 	
 	var testCount = 0;
 	// Determine how many designs we can fit on here
@@ -297,12 +282,6 @@ var drawDesignOnGridAsEdge = function(design, options){
 			console.log("Options.skipMiddleDesign? " + options);
 			if(options && options.skipMiddleDesign){
 				console.log("skipping over design draw at x " + leftSide);
-				
-				// Make sure they are part of the print, though!
-				if(options && options.print && options.print !== "ignore") {
-					console.log("AddingAllLines to printDesign from drawDesignOnGridAsEdge");
-					printDesign.addAllLines(design.lines);
-				}
 			} else {
 				console.log("drawing the full line in edge mode");
 				drawDesignOnGrid(design, options);
@@ -428,7 +407,7 @@ var gatherPrintableStitches = function(){
 		   y1 < hoop.y || y1 > hoop.y + hoop.height ||
 		   y2 < hoop.y || y2 > hoop.y + hoop.height){
 		   	
-		   	console.log("POINT OF LINE OUT OF BOUNDS, skip!")
+		   	console.log("POINT OF LINE OUT OF BOUNDS, skip!");
 		} else {
 		   	// Undo how the line was drawn and add it to the design
 		   	//.attr("x1", line.point1.position.x * gridSpacing)
@@ -500,6 +479,7 @@ var redrawHoop = function(){
 
 var drawStPattern = function(){
 	var svgElement = d3.selectAll("svg");
+	// These lines are scaled by hoops stitches, not grid. So we need to undo that
 	var lineFunction = d3.svg.line()
 							.x(function(d) { return d.x; })
 							.y(function(d) { return d.y; })
@@ -508,11 +488,15 @@ var drawStPattern = function(){
 	removeObjectsWithClassName("stPattern");
 	
 	var lineData = [];
+	//console.log("hoop", hoop);
+	//console.log(stPattern);
+	
 	for(var i = 0; i < stPattern.stitches.length; i++){
-		lineData.push({"x": stPattern.stitches[i].x, "y": stPattern.stitches[i].y});
+		lineData.push({"x":  hoop.centerX + (stPattern.stitches[i].x / hoop.unitsPerStitch * gridSpacing), 
+					   "y":  hoop.centerY + (stPattern.stitches[i].y / hoop.unitsPerStitch * gridSpacing)});
 	}
 	
-	console.log("printing linData", lineData);
+	//console.log("printing linData", lineData);
 	
 	svgElement.append("path")
 		.attr("d", lineFunction(lineData))

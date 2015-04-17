@@ -11,8 +11,8 @@ $( document ).ready(function() {
 	
 	// Resize SVG
 	console.log($(document).width());
-	$("#svg_canvas").width($(document).width() - 100);
-	$("#svg_canvas").height($(document).height()-250);
+	$("#svg_canvas").width($(document).width() - 50);
+	$("#svg_canvas").height($(document).height()-200);
 	
 	drawGrid();
 	
@@ -174,8 +174,6 @@ $( document ).ready(function() {
 		designManip = randomPostProduction(testDesign);
 		drawDesignOnGrid(designManip, {class: "designManip", print: "new"});
 		// randPost only draws the manip, not the original design, which is drawn line-by-line...
-		// Just add all the original design's lines after making a fresh start with the manip
-		printDesign.addAllLines(testDesign.lines);
 		findCenterAndRedrawHoop();
 	});
 	
@@ -229,13 +227,24 @@ $( document ).ready(function() {
 	
 	
 	$("#generatePrint").click(function(){
-		if(printDesign === undefined){
-			console.log("do a Post-Production or edge thing before printing... for now.")
-		} else {
-			// Should be done after hoop is repositioned, which I think happens automatically now.
-			gatherPrintableStitches();
-			generatePrintPattern(printDesign, gridSpacing);
-			drawStPattern();
+		// Should be done after hoop is repositioned, which I think happens automatically now.
+		gatherPrintableStitches();
+		generatePrintPattern(printDesign, gridSpacing);
+		drawStPattern();
+	});
+	
+	$("#zoomHoopIn").click(function() {
+		console.log("trying to zoom IN", hoop.unitsPerStitch);
+		if(hoop.unitsPerStitch < 100){
+			hoop.unitsPerStitch += 10;
+			$("#restartGen").trigger("click");
+		}
+	});
+	$("#zoomHoopOut").click(function() {
+		console.log("trying to zoom OUT", hoop.unitsPerStitch);
+		if(hoop.unitsPerStitch > 10){
+			hoop.unitsPerStitch -= 10;
+			$("#restartGen").trigger("click");
 		}
 	});
 });
